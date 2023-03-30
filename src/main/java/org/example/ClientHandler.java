@@ -6,7 +6,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.net.SocketException;
+import java.util.Iterator;
+import java.util.Map;
 import org.example.logic.Game;
+import org.example.logic.Lobby;
 import org.example.logic.Player;
 
 /**
@@ -45,47 +49,137 @@ public class ClientHandler implements Runnable
         }
     }
 
-    @Override
-    public void run()
+    /**
+     * Sends a message to the client through the established connection.
+     *
+     * @param message the message to be sent
+     * @throws RuntimeException if there is a failure to send the message to the client
+     */
+    private void send(String message)
     {
         try
         {
-            while (true)
+            bufferedWriter.write(message + "\r\n");
+            bufferedWriter.flush();
+        }
+        catch (IOException exception)
+        {
+            throw new RuntimeException("Failed to send message to the client.");
+        }
+    }
+
+
+    /**
+     * Receives a message from the client through the established connection.
+     *
+     * @return the message received from the client
+     * @throws RuntimeException if there is a failure to receive the message from the client
+     */
+    private String receive()
+    {
+        try
+        {
+            return this.bufferedReader.readLine();
+        }
+        catch (SocketException exception)
+        {
+            throw new ClientDisconnectedException();
+        }
+        catch (IOException exception)
+        {
+            throw new RuntimeException("Failed to receive message from the client.");
+        }
+    }
+
+    @Override
+    public void run()
+    {
+        boolean isRunning = true;
+        while (isRunning)
+        {
+            String ip = this.clientSocket.getInetAddress().getHostAddress();
+            Map<String, String> ipUsernameMap = this.server.getIpUsernameMap();
+            boolean isAdmin = this.server.getIpAdminMap().containsKey(ip);
+            try
             {
-                String[] input = this.bufferedReader.readLine().split(" ");
-                String lobbyName = null;
+                String[] input;
+                String lobbyName;
+                input = this.receive().split(" ");
                 switch (input[0])
                 {
                     case "REQUEST_USERNAME":
-                        String username = this.server.getUsernameCollection().getRandomUsername();
-                        this.bufferedWriter.write("USERNAME " + username + "\r\n");
-                        this.bufferedWriter.flush();
-                        this.player = new Player(username, 0, 5);
-                        this.server.addPlayer(this.player, this);
+
+                        if (ipUsernameMap.containsKey(ip))
+                        {
+                            this.send("USERNAME " + ipUsernameMap.get(ip) + " " + isAdmin);
+                            System.out.println(
+                                this.server.getIpUsernameMap().get(ip) + "|" + ip + " reconnected."
+                                + "\r\n");
+                        }
+                        else
+                        {
+                            String username =
+                                this.server.getUsernameCollection().getRandomUsername();
+                            ipUsernameMap.put(ip, username);
+                            this.send("USERNAME " + username + " " + isAdmin);
+                            this.player = new Player(username, 0, 5);
+                            this.server.addPlayer(this, this.player);
+                            System.out.println(
+                                "Gave new client " + ip + " the username: " + username + "\r\n");
+                        }
                         break;
 
                     case "BECOME_ADMIN":
                         String password = input[1];
                         if (password.equals(this.server.getAdminPassword()))
                         {
-                            this.bufferedWriter.write("BECOME_ADMIN_SUCCESSFUL" + "\r\n");
+                            this.send("BECOME_ADMIN_SUCCESSFUL");
+                            this.server.getIpAdminMap().put(ip, true);
+                            System.out.println(this.server.getIpUsernameMap().get(ip) + "|" + ip
+                                               + " entered the correct admin password and became "
+                                               + "administrator." + "\r\n");
                         }
                         else
                         {
-                            this.bufferedWriter.write("BECOME_ADMIN_FAILED" + "\r\n");
+                            this.send("BECOME_ADMIN_FAILED");
+                            System.out.println(this.server.getIpUsernameMap().get(ip) + "|" + ip
+                                               + " tried to become administrator, but entered the"
+                                               + " wrong admin password and failed." + "\r\n");
                         }
-                        this.bufferedWriter.flush();
                         break;
 
                     case "CREATE_LOBBY":
-                        lobbyName = this.bufferedReader.readLine();
-                        int numberOfPlayers = Integer.parseInt(this.bufferedReader.readLine());
-                        int numberOfRounds = Integer.parseInt(this.bufferedReader.readLine());
-                        int roundTime = Integer.parseInt(this.bufferedReader.readLine());
-                        int minShrimpPounds = Integer.parseInt(this.bufferedReader.readLine());
-                        int maxShrimpPounds = Integer.parseInt(this.bufferedReader.readLine());
-                        this.server.createLobby(lobbyName, numberOfPlayers, numberOfRounds,
-                                                roundTime, minShrimpPounds, maxShrimpPounds);
+                        lobbyName = input[1];
+                        int numberOfPlayers;
+                        int numberOfRounds;
+                        int roundTime;
+                        int minShrimpPounds;
+                        int maxShrimpPounds;
+                        try
+                        {
+                            numberOfPlayers = Integer.parseInt(input[2]);
+                            numberOfRounds = Integer.parseInt(input[3]);
+                            roundTime = Integer.parseInt(input[4]);
+                            minShrimpPounds = Integer.parseInt(input[5]);
+                            maxShrimpPounds = Integer.parseInt(input[6]);
+                            this.server.createLobby(lobbyName, numberOfPlayers, numberOfRounds,
+                                                    roundTime, minShrimpPounds, maxShrimpPounds);
+                            this.send("CREATE_LOBBY_SUCCESS");
+                            System.out.println(this.server.getIpUsernameMap().get(ip) + "|" + ip
+                                               + " created a new lobby called: " + lobbyName
+                                               + "\r\n");
+                        }
+                        catch (NumberFormatException exception)
+                        {
+                            this.send("CREATE_LOBBY_FAILED");
+                            throw new RuntimeException(
+                                "Invalid user input received when trying to create lobby.");
+                        }
+                        catch (RuntimeException exception)
+                        {
+                            this.send("CREATE_LOBBY_FAILED");
+                            throw new RuntimeException(exception.getMessage());
+                        }
                         break;
 
                     case "JOIN_LOBBY":
@@ -106,18 +200,39 @@ public class ClientHandler implements Runnable
                         break;
 
                     case "DISCONNECT":
+                        isRunning = false;
                         break;
 
                     default:
                         break;
                 }
             }
+            catch (ClientDisconnectedException exception)
+            {
+                String ipAddress = this.clientSocket.getInetAddress().getHostAddress();
+                System.err.println(
+                    this.server.getIpUsernameMap().get(ip) + "|" + ip + " disconnected." + "\r\n");
+                Player player = this.server.getPlayers().get(this);
+                this.server.getPlayers().remove(this);
+                boolean clientRemoved = false;
+                Iterator<Lobby> iterator = this.server.getLobbies().keySet().iterator();
+                while (!clientRemoved && iterator.hasNext())
+                {
+                    Lobby lobby = iterator.next();
+                    if (lobby.hasPlayer(player))
+                    {
+                        lobby.removePlayer(player);
+                        clientRemoved = true;
+                    }
+                }
+                isRunning = false;
+            }
+            catch (RuntimeException | IOException exception)
+            {
+                System.err.println("Exception: " + exception + "\r\n");
+                isRunning = false;
+            }
 
-
-        }
-        catch (IOException exception)
-        {
-            System.err.println("Exception: " + exception);
         }
     }
 
@@ -165,35 +280,6 @@ public class ClientHandler implements Runnable
     {
         // sends a request to the server to update the player's stats based on their performance
         // in the game
-    }
-
-    /**
-     * Sends a message to the client.
-     *
-     * @param message a String representing the message to be sent
-     */
-    public void sendMessage(String message)
-    {
-        try
-        {
-            this.bufferedWriter.write(message + "\r\n");
-        }
-        catch (IOException exception)
-        {
-            System.err.println("Failed to send message: " + exception);
-        }
-
-    }
-
-    /**
-     * Receives a message from the server and returns it as a String.
-     *
-     * @return a String representing the message received from the server
-     */
-    public String receiveMessage()
-    {
-        // receives a message from the server and returns it as a String
-        return null;
     }
 
     /**

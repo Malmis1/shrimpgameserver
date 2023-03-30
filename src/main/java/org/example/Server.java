@@ -25,9 +25,10 @@ public class Server
     private static final int PORT = 8080;
     private Map<Lobby, GameSettings> lobbies;
     private Map<String, Game> games;
-    private Map<Player, ClientHandler> players;
-    private List<ClientHandler> clients;
+    private Map<ClientHandler, Player> players;
     private UsernameCollection usernameCollection;
+    private Map<String, String> ipUsernameMap;
+    private Map<String, Boolean> ipAdminMap;
     private String adminPassword;
 
     /**
@@ -37,15 +38,30 @@ public class Server
     {
         this.lobbies = new HashMap<Lobby, GameSettings>();
         this.games = new HashMap<String, Game>();
-        this.players = new HashMap<Player, ClientHandler>();
-        this.clients = new ArrayList<ClientHandler>();
+        this.players = new HashMap<ClientHandler, Player>();
         this.usernameCollection = new UsernameCollection();
+        this.ipUsernameMap = new HashMap<String, String>();
+        this.ipAdminMap = new HashMap<String, Boolean>();
         this.adminPassword = "adamsmith123";
+    }
+
+    public synchronized Map<ClientHandler, Player> getPlayers()
+    {
+        return this.players;
     }
 
     public synchronized UsernameCollection getUsernameCollection()
     {
         return this.usernameCollection;
+    }
+
+    public synchronized Map<String, String> getIpUsernameMap()
+    {
+        return this.ipUsernameMap;
+    }
+    public synchronized Map<String, Boolean> getIpAdminMap()
+    {
+        return this.ipAdminMap;
     }
 
     public String getAdminPassword()
@@ -57,12 +73,10 @@ public class Server
     {
         try (ServerSocket serverSocket = new ServerSocket(PORT))
         {
-            System.out.println("Server started on port " + PORT);
+            System.out.println("Server started on port " + PORT + "\r\n");
             while (true)
             {
                 Socket clientSocket = serverSocket.accept();
-                System.out.println(
-                    "New client connected: " + clientSocket.getInetAddress().getHostAddress());
                 ClientHandler clientHandler = new ClientHandler(clientSocket, this);
                 Thread clientThread = new Thread(clientHandler);
                 clientThread.start();
@@ -80,17 +94,26 @@ public class Server
      * @param lobbyName       the name of the lobby
      * @param numPlayers      the maximum number of players allowed in the lobby
      * @param numRounds       the number of rounds in the game
-     * @param roundTime       the time limit for each round
+     * @param roundTime       the time limit in seconds for each round
      * @param minShrimpPounds the minimum amount of shrimp that can be caught in a round
      * @param maxShrimpPounds the maximum amount of shrimp that can be caught in a round
+     * @throws RuntimeException if there is an error creating the lobby, such as if the lobby
+     *                          name is null or empty
      */
     public void createLobby(String lobbyName, int numPlayers, int numRounds, int roundTime,
                             int minShrimpPounds, int maxShrimpPounds)
     {
-        Lobby lobby = new Lobby(lobbyName);
-        GameSettings gameSettings = new GameSettings(numPlayers, numRounds, roundTime,
-                                                     minShrimpPounds, maxShrimpPounds);
-        this.lobbies.put(lobby, gameSettings);
+        try
+        {
+            Lobby lobby = new Lobby(lobbyName);
+            GameSettings gameSettings = new GameSettings(numPlayers, numRounds, roundTime,
+                                                         minShrimpPounds, maxShrimpPounds);
+            this.lobbies.put(lobby, gameSettings);
+        }
+        catch (IllegalArgumentException exception)
+        {
+            throw new RuntimeException("Failed to create lobby.");
+        }
     }
 
     /**
@@ -185,92 +208,47 @@ public class Server
 
     }
 
-    /**
-     * Disconnects a client from the server, removing the specified client handler from the
-     * clients list
-     * and ending any games they are currently in.
-     *
-     * @param clientHandler the client handler representing the client to be disconnected
-     */
-    public void disconnectClient(ClientHandler clientHandler)
+    public void addPlayer(ClientHandler clientHandler, Player player)
     {
-        this.clients.remove(clientHandler);
-        Game game = clientHandler.getGame();
-        if (game != null)
-        {
-            game.end();
-        }
-    }
-
-    public void addPlayer(Player player, ClientHandler clientHandler)
-    {
-        this.players.put(player, clientHandler);
+        this.players.put(clientHandler, player);
     }
 
     public void sendLobbyCreated(ClientHandler clientHandler, String lobbyName)
     {
-        clientHandler.sendMessage("LOBBY_CREATED " + lobbyName);
     }
 
     public void sendLobbyList(ClientHandler clientHandler, Set<Lobby> lobbies)
     {
         String lobbyList = lobbies.stream().map(Lobby::getName).collect(Collectors.joining(","));
-        clientHandler.sendMessage("LOBBY_LIST " + lobbyList);
+
     }
 
     public void sendLobbyJoined(ClientHandler clientHandler)
     {
-        clientHandler.sendMessage("LOBBY_JOINED");
     }
 
     public void sendLobbyLeft(ClientHandler clientHandler)
     {
-        clientHandler.sendMessage("LOBBY_LEFT");
     }
 
     public void sendGameStarting(Game game)
     {
-        for (Player player : game.getPlayers())
-        {
-            ClientHandler clientHandler = this.players.get(player);
-            clientHandler.sendMessage("GAME_STARTING");
-        }
     }
 
     public void sendRoundStarting(Game game, int roundNumber)
     {
-        for (Player player : game.getPlayers())
-        {
-            ClientHandler clientHandler = this.players.get(player);
-            clientHandler.sendMessage("ROUND_STARTING " + roundNumber);
-        }
     }
 
     public void sendRoundEnded(Game game, int shrimpPrice, int income, int expenses)
     {
-        for (Player player : game.getPlayers())
-        {
-            ClientHandler clientHandler = this.players.get(player);
-            clientHandler.sendMessage("ROUND_ENDED " + shrimpPrice + " " + income + " " + expenses);
-        }
     }
 
     public void sendCommunicationStarting(Game game)
     {
-        for (Player player : game.getPlayers())
-        {
-            ClientHandler clientHandler = this.players.get(player);
-            clientHandler.sendMessage("COMMUNICATION_STARTING");
-        }
     }
 
     public void sendCommunicationEnded(Game game)
     {
-        for (Player player : game.getPlayers())
-        {
-            ClientHandler clientHandler = this.players.get(player);
-            clientHandler.sendMessage("COMMUNICATION_ENDED");
-        }
     }
 
     public void sendScoreboard(Game game, int round, int[] shrimpCounts, int totalShrimp,
@@ -286,11 +264,6 @@ public class Server
         messageBuilder.append(" ").append(income);
         messageBuilder.append(" ").append(profit);
         messageBuilder.append(" ").append(totalProfit);
-        for (Player player : game.getPlayers())
-        {
-            ClientHandler clientHandler = this.players.get(player);
-            clientHandler.sendMessage(messageBuilder.toString());
-        }
     }
 
     public void sendResults(Game game, int[] scores)
@@ -300,21 +273,14 @@ public class Server
         {
             messageBuilder.append(score).append(" ");
         }
-        for (Player player : game.getPlayers())
-        {
-            ClientHandler clientHandler = this.players.get(player);
-            clientHandler.sendMessage(messageBuilder.toString());
-        }
     }
 
     public void sendError(ClientHandler clientHandler, String errorMessage)
     {
-        clientHandler.sendMessage("ERROR " + errorMessage);
     }
 
     public void sendDisconnected(ClientHandler clientHandler)
     {
-        clientHandler.sendMessage("DISCONNECTED");
     }
 }
 

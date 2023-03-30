@@ -14,12 +14,17 @@ public class Lobby
     private List<Player> players;
 
     /**
-     * Constructor for the Lobby class.
+     * Creates a new lobby with the given name.
      *
      * @param name the name of the lobby
+     * @throws IllegalArgumentException if the name is null or empty
      */
     public Lobby(String name)
     {
+        if (name == null || name.isEmpty())
+        {
+            throw new IllegalArgumentException("Lobby name cannot be null or empty.");
+        }
         this.name = name;
         this.players = new ArrayList<Player>();
     }
@@ -90,5 +95,10 @@ public class Lobby
             isFull = true;
         }
         return isFull;
+    }
+
+    public boolean hasPlayer(Player player)
+    {
+        return this.players.contains(player);
     }
 }
