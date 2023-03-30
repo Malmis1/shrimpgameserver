@@ -105,7 +105,7 @@ public class Server
     {
         try
         {
-            Lobby lobby = new Lobby(lobbyName);
+            Lobby lobby = new Lobby(lobbyName, numPlayers);
             GameSettings gameSettings = new GameSettings(numPlayers, numRounds, roundTime,
                                                          minShrimpPounds, maxShrimpPounds);
             this.lobbies.put(lobby, gameSettings);

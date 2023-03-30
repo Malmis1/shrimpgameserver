@@ -12,6 +12,7 @@ public class Lobby
 {
     private String name;
     private List<Player> players;
+    private int maxPlayers;
 
     /**
      * Creates a new lobby with the given name.
@@ -19,13 +20,14 @@ public class Lobby
      * @param name the name of the lobby
      * @throws IllegalArgumentException if the name is null or empty
      */
-    public Lobby(String name)
+    public Lobby(String name, int maxPlayers)
     {
         if (name == null || name.isEmpty())
         {
             throw new IllegalArgumentException("Lobby name cannot be null or empty.");
         }
         this.name = name;
+        this.maxPlayers = maxPlayers;
         this.players = new ArrayList<Player>();
     }
 
@@ -57,6 +59,11 @@ public class Lobby
     public List<Player> getPlayers()
     {
         return this.players;
+    }
+
+    public int getMaxPlayers()
+    {
+        return this.maxPlayers;
     }
 
     /**

@@ -182,6 +182,30 @@ public class ClientHandler implements Runnable
                         }
                         break;
 
+                    case "REQUEST_LOBBY_LIST":
+                        StringBuilder lobbyList = new StringBuilder("LOBBY_LIST");
+                        try
+                        {
+                            for (Lobby lobby : this.server.getLobbies().keySet())
+                            {
+                                String name = lobby.getName();
+                                String playerAmount = "" + lobby.getPlayers().size();
+                                String capacity = "" + lobby.getMaxPlayers();
+                                lobbyList.append(" " + name + "." + playerAmount + "." + capacity);
+                            }
+                            this.send(lobbyList.toString());
+                            System.out.println(this.server.getIpUsernameMap().get(ip) + "|" + ip
+                                               + " requested the lobby list: " + lobbyList + "\r"
+                                               + "\n");
+                        }
+                        catch (RuntimeException exception)
+                        {
+                            this.send("REQUEST_FAILED");
+                            System.out.println("Failed to send lobby list: " + lobbyList + "\r\n");
+                            throw new RuntimeException(exception.getMessage());
+                        }
+                        break;
+
                     case "JOIN_LOBBY":
                         lobbyName = this.bufferedReader.readLine();
                         this.server.joinLobby(this, lobbyName);
