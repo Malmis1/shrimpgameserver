@@ -55,7 +55,7 @@ public class ClientHandler implements Runnable
      * @param message the message to be sent
      * @throws RuntimeException if there is a failure to send the message to the client
      */
-    private void send(String message)
+    public void send(String message)
     {
         try
         {
@@ -75,7 +75,7 @@ public class ClientHandler implements Runnable
      * @return the message received from the client
      * @throws RuntimeException if there is a failure to receive the message from the client
      */
-    private String receive()
+    public String receive()
     {
         try
         {
@@ -165,6 +165,7 @@ public class ClientHandler implements Runnable
                             this.server.createLobby(lobbyName, numberOfPlayers, numberOfRounds,
                                                     roundTime, minShrimpPounds, maxShrimpPounds);
                             this.send("CREATE_LOBBY_SUCCESS");
+                            this.server.sendLobbyInfoToClients();
                             System.out.println(this.server.getIpUsernameMap().get(ip) + "|" + ip
                                                + " created a new lobby called: " + lobbyName
                                                + "\r\n");
@@ -186,7 +187,7 @@ public class ClientHandler implements Runnable
                         StringBuilder lobbyList = new StringBuilder("LOBBY_LIST");
                         try
                         {
-                            for (Lobby lobby : this.server.getLobbies().keySet())
+                            for (Lobby lobby : this.server.getLobbyGameSettingsMap().keySet())
                             {
                                 String name = lobby.getName();
                                 String playerAmount = "" + lobby.getPlayers().size();
@@ -207,11 +208,34 @@ public class ClientHandler implements Runnable
                         break;
 
                     case "JOIN_LOBBY":
-                        lobbyName = this.bufferedReader.readLine();
-                        this.server.joinLobby(this, lobbyName);
+                        lobbyName = input[1];
+                        Lobby lobby = this.server.getStringLobbyMap().get(lobbyName);
+                        if (this.server.getLobbyGameSettingsMap().keySet().contains(lobby))
+                        {
+                            if (!lobby.isFull())
+                            {
+                                this.server.joinLobby(this, lobbyName);
+                                this.send("LOBBY_JOINED");
+                                this.server.sendLobbyInfoToClients();
+                            }
+                            else
+                            {
+                                this.send("LOBBY_FULL");
+                            }
+                            if (lobby.isFull())
+                            {
+                                //Start game and delete lobby
+                            }
+                        }
+                        else
+                        {
+                            this.send("LOBBY_NOT_EXIST");
+                        }
                         break;
 
                     case "LEAVE_LOBBY":
+                        this.server.leaveLobby(this);
+                        this.server.sendLobbyInfoToClients();
                         break;
 
                     case "READY":
@@ -223,10 +247,6 @@ public class ClientHandler implements Runnable
                     case "COMMUNICATE":
                         break;
 
-                    case "DISCONNECT":
-                        isRunning = false;
-                        break;
-
                     default:
                         break;
                 }
@@ -236,10 +256,11 @@ public class ClientHandler implements Runnable
                 String ipAddress = this.clientSocket.getInetAddress().getHostAddress();
                 System.err.println(
                     this.server.getIpUsernameMap().get(ip) + "|" + ip + " disconnected." + "\r\n");
-                Player player = this.server.getPlayers().get(this);
-                this.server.getPlayers().remove(this);
+                Player player = this.server.getClientHandlerPlayerMap().get(this);
+                this.server.getClientHandlerPlayerMap().remove(this);
                 boolean clientRemoved = false;
-                Iterator<Lobby> iterator = this.server.getLobbies().keySet().iterator();
+                Iterator<Lobby> iterator =
+                    this.server.getLobbyGameSettingsMap().keySet().iterator();
                 while (!clientRemoved && iterator.hasNext())
                 {
                     Lobby lobby = iterator.next();
@@ -251,7 +272,7 @@ public class ClientHandler implements Runnable
                 }
                 isRunning = false;
             }
-            catch (RuntimeException | IOException exception)
+            catch (RuntimeException exception)
             {
                 System.err.println("Exception: " + exception + "\r\n");
                 isRunning = false;

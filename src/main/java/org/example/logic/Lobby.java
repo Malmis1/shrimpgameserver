@@ -97,7 +97,7 @@ public class Lobby
     public boolean isFull()
     {
         boolean isFull = false;
-        if (this.players.size() % 3 == 0)
+        if (this.players.size() == this.maxPlayers)
         {
             isFull = true;
         }
