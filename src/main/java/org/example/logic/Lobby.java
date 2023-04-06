@@ -66,34 +66,6 @@ public class Lobby
         return this.maxPlayers;
     }
 
-    /**
-     * Adds a player to the lobby.
-     *
-     * @param player the player to add
-     */
-    public void addPlayer(Player player)
-    {
-        this.players.add(player);
-    }
-
-    /**
-     * Removes a player from the lobby.
-     *
-     * @param player the player to remove
-     */
-    public void removePlayer(Player player)
-    {
-        this.players.remove(player);
-    }
-
-    /**
-     * Removes all players from the lobby.
-     */
-    public void clearPlayers()
-    {
-        this.players.clear();
-    }
-
     public boolean isFull()
     {
         boolean isFull = false;

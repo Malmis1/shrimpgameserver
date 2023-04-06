@@ -3,13 +3,14 @@ package org.example;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.example.logic.Game;
 import org.example.logic.GameSettings;
+import org.example.logic.Island;
 import org.example.logic.Lobby;
 import org.example.logic.Player;
 import org.example.logic.UsernameCollection;
@@ -21,46 +22,59 @@ import org.example.logic.UsernameCollection;
 public class Server {
   private static final int PORT = 8080;
   private final Map<Lobby, GameSettings> lobbyGameSettingsMap;
-  private Map<String, Game> stringGameMap;
-  private final Map<String, Lobby> stringLobbyMap;
-  private Map<ClientHandler, Player> clientHandlerPlayerMap;
-  private UsernameCollection usernameCollection;
-  private Map<String, String> ipUsernameMap;
-  private Map<String, Boolean> ipAdminMap;
-  private String adminPassword;
+  private final Map<String, Lobby> nameLobbyMap;
+  private final Map<String, Game> stringGameMap;
+  private final List<ClientHandler> clients;
+  private final UsernameCollection usernameCollection;
+  private final Map<String, String> ipUsernameMap;
+  private final Map<String, Boolean> ipAdminMap;
+  private final String adminPassword;
 
   /**
    * Constructs a new Server object and initializes the lobbies, games, and clients ArrayLists.
    */
   public Server() {
     this.lobbyGameSettingsMap = new HashMap<Lobby, GameSettings>();
+    this.nameLobbyMap = new HashMap<String, Lobby>();
     this.stringGameMap = new HashMap<String, Game>();
-    this.stringLobbyMap = new HashMap<String, Lobby>();
-    this.clientHandlerPlayerMap = new HashMap<ClientHandler, Player>();
+    this.clients = new ArrayList<ClientHandler>();
     this.usernameCollection = new UsernameCollection();
     this.ipUsernameMap = new HashMap<String, String>();
     this.ipAdminMap = new HashMap<String, Boolean>();
     this.adminPassword = "detteerbra";
   }
 
-  public synchronized Map<ClientHandler, Player> getClientHandlerPlayerMap() {
-    return this.clientHandlerPlayerMap;
+  public List<ClientHandler> getClients() {
+    return this.clients;
   }
 
-  public synchronized UsernameCollection getUsernameCollection() {
+  public UsernameCollection getUsernameCollection() {
     return this.usernameCollection;
   }
 
-  public synchronized Map<String, String> getIpUsernameMap() {
+  public Map<String, String> getIpUsernameMap() {
     return this.ipUsernameMap;
   }
 
-  public synchronized Map<String, Boolean> getIpAdminMap() {
+  public Map<String, Boolean> getIpAdminMap() {
     return this.ipAdminMap;
   }
 
   public String getAdminPassword() {
     return this.adminPassword;
+  }
+
+  /**
+   * Returns a list of all available lobbies on the server.
+   *
+   * @return a list of lobbies
+   */
+  public Map<Lobby, GameSettings> getLobbyGameSettingsMap() {
+    return this.lobbyGameSettingsMap;
+  }
+
+  public Map<String, Lobby> getNameLobbyMap() {
+    return this.nameLobbyMap;
   }
 
   public void start() {
@@ -97,29 +111,13 @@ public class Server {
       GameSettings gameSettings = new GameSettings(numPlayers, numRounds, roundTime,
                                                    minShrimpPounds, maxShrimpPounds);
       this.lobbyGameSettingsMap.put(lobby, gameSettings);
-      this.stringLobbyMap.put(lobbyName, lobby);
+      this.nameLobbyMap.put(lobby.getName(), lobby);
     }
     catch (IllegalArgumentException exception) {
       throw new RuntimeException("Failed to create lobby.");
     }
   }
 
-  /**
-   * Returns a list of all available lobbies on the server.
-   *
-   * @return a list of lobbies
-   */
-  public Map<Lobby, GameSettings> getLobbyGameSettingsMap() {
-    synchronized (this.lobbyGameSettingsMap) {
-      return this.lobbyGameSettingsMap;
-    }
-  }
-
-  public Map<String, Lobby> getStringLobbyMap() {
-    synchronized (this.stringLobbyMap) {
-      return this.stringLobbyMap;
-    }
-  }
 
   /**
    * Adds the specified client handler to the lobby with the specified name, creating a new
@@ -129,12 +127,13 @@ public class Server {
    * @param lobbyName     the name of the lobby to join
    */
   public void joinLobby(ClientHandler clientHandler, String lobbyName) {
+    Player player = clientHandler.getPlayer();
     Iterator<Lobby> iterator = this.lobbyGameSettingsMap.keySet().iterator();
     boolean finished = false;
     while (!finished && iterator.hasNext()) {
       Lobby lobby = iterator.next();
       if (lobby.getName().equals(lobbyName)) {
-        lobby.addPlayer(clientHandler.getPlayer());
+        lobby.getPlayers().add(player);
         finished = true;
       }
     }
@@ -146,13 +145,13 @@ public class Server {
    * @param clientHandler the client handler associated with the player to be removed
    */
   public void leaveLobby(ClientHandler clientHandler) {
-    Player player = this.clientHandlerPlayerMap.get(clientHandler);
+    Player player = clientHandler.getPlayer();
     Iterator<Lobby> iterator = this.lobbyGameSettingsMap.keySet().iterator();
     boolean finished = false;
     while (!finished && iterator.hasNext()) {
       Lobby lobby = iterator.next();
       if (lobby.hasPlayer(player)) {
-        lobby.removePlayer(player);
+        lobby.getPlayers().remove(player);
         finished = true;
       }
     }
@@ -160,12 +159,42 @@ public class Server {
 
   /**
    * Starts the specified game.
-   *
-   * @param game the game to start
    */
-  public void startGame(Game game) {
+  public void startGame(Lobby lobby) {
+    GameSettings gameSettings = new GameSettings(this.lobbyGameSettingsMap.get(lobby));
+    System.out.println("Server class: Players in lobby: " + lobby.getPlayers().size());
+    Game game = new Game(lobby.getName(), gameSettings, lobby.getPlayers());
+    System.out.println("Server class: Players in game: " + game.getPlayers());
     this.stringGameMap.put(game.getName(), game);
-    game.start();
+    for (ClientHandler client : this.getClients()) {
+      Player player = client.getPlayer();
+      if (lobby.hasPlayer(player)) {
+        List<Island> islands = game.getIslands();
+        Island playerIsland = null;
+        Iterator<Island> iterator = islands.iterator();
+        boolean islandFound = false;
+        while (!islandFound && iterator.hasNext()) {
+          Island island = iterator.next();
+          if (island.hasPlayer(player)) {
+            playerIsland = island;
+            islandFound = true;
+          }
+        }
+        StringBuilder gameStarted = new StringBuilder("UPDATE GAME_STARTED");
+        List<Player> otherPlayers = new ArrayList<>(playerIsland.getPlayers());
+        otherPlayers.remove(player);
+        gameStarted.append(" " + otherPlayers.get(0) + " " + otherPlayers.get(1));
+        gameStarted.append(" " + gameSettings.getNumberOfRounds());
+        gameStarted.append(" " + gameSettings.getRoundTime());
+        gameStarted.append(" " + gameSettings.getMinShrimpPounds());
+        gameStarted.append(" " + gameSettings.getMaxShrimpPounds());
+        gameStarted.append(" " + playerIsland.getNumber());
+        client.send(gameStarted.toString());
+      }
+    }
+    this.lobbyGameSettingsMap.remove(lobby, gameSettings);
+    this.nameLobbyMap.remove(lobby.getName(), lobby);
+    this.sendLobbyInfoToClients();
   }
 
   /**
@@ -174,28 +203,7 @@ public class Server {
    * @param game the game to end
    */
   public void endGame(Game game) {
-    this.stringGameMap.remove(game);
-  }
-
-  /**
-   * Updates the specified player's stats based on their performance in the game.
-   *
-   * @param player       the player to update
-   * @param poundsCaught the amount of shrimp caught by the player
-   * @param expenses     the expenses of the player
-   */
-  public void updatePlayerStats(Player player, int poundsCaught, int expenses) {
-
-  }
-
-  /**
-   * Broadcasts the specified message to all clients in the specified game.
-   *
-   * @param message the message to broadcast
-   * @param game    the game to broadcast the message to
-   */
-  public void broadcastMessage(String message, Game game) {
-    game.broadcastMessage(message);
+    this.stringGameMap.remove(game.getName(), game);
   }
 
   public void sendLobbyInfoToClients() {
@@ -206,68 +214,27 @@ public class Server {
       String capacity = "" + lobby.getMaxPlayers();
       lobbyList.append(" " + name + "." + playerAmount + "." + capacity);
     }
-    for (ClientHandler client : this.getClientHandlerPlayerMap().keySet()) {
+    for (ClientHandler client : this.getClients()) {
       client.send(lobbyList.toString());
+      System.out.println("Sent lobby list to " + client.getPlayer().getName() + "\r\n");
     }
   }
 
-  public void addPlayer(ClientHandler clientHandler, Player player) {
-    this.clientHandlerPlayerMap.put(clientHandler, player);
-  }
-
-  public void sendLobbyCreated(ClientHandler clientHandler, String lobbyName) {
-  }
-
-  public void sendLobbyList(ClientHandler clientHandler, Set<Lobby> lobbies) {
-    String lobbyList = lobbies.stream().map(Lobby::getName).collect(Collectors.joining(","));
-
-  }
-
-  public void sendLobbyJoined(ClientHandler clientHandler) {
-  }
-
-  public void sendLobbyLeft(ClientHandler clientHandler) {
-  }
-
-  public void sendGameStarting(Game game) {
-  }
-
-  public void sendRoundStarting(Game game, int roundNumber) {
-  }
-
-  public void sendRoundEnded(Game game, int shrimpPrice, int income, int expenses) {
-  }
-
-  public void sendCommunicationStarting(Game game) {
-  }
-
-  public void sendCommunicationEnded(Game game) {
-  }
-
-  public void sendScoreboard(Game game, int round, int[] shrimpCounts, int totalShrimp, int income,
-                             int profit, int totalProfit) {
-    StringBuilder messageBuilder = new StringBuilder("SCOREBOARD ");
-    messageBuilder.append(round);
-    for (int shrimpCount : shrimpCounts) {
-      messageBuilder.append(" ").append(shrimpCount);
-    }
-    messageBuilder.append(" ").append(totalShrimp);
-    messageBuilder.append(" ").append(income);
-    messageBuilder.append(" ").append(profit);
-    messageBuilder.append(" ").append(totalProfit);
-  }
-
-  public void sendResults(Game game, int[] scores) {
-    StringBuilder messageBuilder = new StringBuilder("RESULTS ");
-    for (int score : scores) {
-      messageBuilder.append(score).append(" ");
+  public void catchShrimp(ClientHandler clientHandler, int shrimpCaught) {
+    Player player = clientHandler.getPlayer();
+    player.setShrimpCaught(shrimpCaught);
+    Island island = player.getIsland();
+    List<Player> otherPlayers = new ArrayList<>(island.getPlayers());
+    otherPlayers.remove(player);
+    for (Player otherPlayer : otherPlayers) {
+      ClientHandler client = otherPlayer.getClientHandler();
+      this.sendShrimpCaughtInfoToClient(client, player.getName(), shrimpCaught);
     }
   }
 
-  public void sendError(ClientHandler clientHandler, String errorMessage) {
-  }
-
-  public void sendDisconnected(ClientHandler clientHandler) {
+  public void sendShrimpCaughtInfoToClient(ClientHandler client, String playerName,
+                                           int shrimpCaught) {
+    client.send("UPDATE SHRIMP_CAUGHT " + playerName + " " + shrimpCaught);
   }
 }
 

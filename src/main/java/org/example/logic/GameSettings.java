@@ -34,6 +34,15 @@ public class GameSettings
         this.maxShrimpPounds = maxShrimpPounds;
     }
 
+    public GameSettings(GameSettings gameSettings)
+    {
+        this.numberOfPlayers = gameSettings.getNumberOfPlayers();
+        this.numberOfRounds = gameSettings.getNumberOfRounds();
+        this.roundTime = gameSettings.getRoundTime();
+        this.minShrimpPounds = gameSettings.getMinShrimpPounds();
+        this.maxShrimpPounds = gameSettings.getMaxShrimpPounds();
+    }
+
     /**
      * Getter for the number of players in the game.
      *
