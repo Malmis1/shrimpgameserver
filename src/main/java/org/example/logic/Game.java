@@ -36,12 +36,10 @@ public class Game {
     for (Player player : players) {
       if (islandPlayers.isEmpty() || islandPlayers.size() % 3 != 0) {
         islandPlayers.add(player);
-        System.out.println("Game class: Added " + player.getName() + " to islandPlayers");
       }
-      else {
-        Island island = new Island(name, islandNum, islandPlayers);
-        for (Player islandPlayer : islandPlayers)
-        {
+      if (islandPlayers.size() % 3 == 0) {
+        Island island = new Island(name, islandNum, new ArrayList<>(islandPlayers));
+        for (Player islandPlayer : islandPlayers) {
           islandPlayer.setIsland(island);
         }
         islands.add(island);
@@ -50,7 +48,6 @@ public class Game {
       }
     }
     this.islands = islands;
-    System.out.println("Game class: Size of islands in game: " + this.islands.size());
   }
 
   /**

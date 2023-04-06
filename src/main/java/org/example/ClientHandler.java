@@ -25,6 +25,7 @@ public class ClientHandler implements Runnable {
   private BufferedReader bufferedReader;
   private Game game;
   private Player player;
+  private Lobby lobbyJoined;
 
   /**
    * Constructor for the ClientHandler class.
@@ -107,13 +108,17 @@ public class ClientHandler implements Runnable {
               System.out.println(
                   this.server.getIpUsernameMap().get(ip) + "|" + ip + " reconnected." + "\r\n");
             }
-            else {
+            else if (input[1].equals(Server.VERSION)) {
               String username = this.server.getUsernameCollection().getRandomUsername();
               ipUsernameMap.put(ip, username);
               this.send("USERNAME " + username + " " + isAdmin);
               this.player = new Player(username, this, 5);
               this.server.getClients().add(this);
               System.out.println("Gave new client " + ip + " the username: " + username + "\r\n");
+            }
+            else {
+              isRunning = false;
+              System.out.println(ip + " tried to connect, but has an older version." + "\r\n");
             }
             break;
 
@@ -197,7 +202,10 @@ public class ClientHandler implements Runnable {
                 if (!lobby.isFull()) {
                   this.server.joinLobby(this, lobbyName);
                   this.send("LOBBY_JOINED");
+                  this.lobbyJoined = lobby;
                   this.server.sendLobbyInfoToClients();
+                  System.out.println(
+                      this.player.getName() + " joined the lobby " + lobbyName + "\r\n");
                 }
                 else {
                   this.send("LOBBY_FULL");
@@ -212,6 +220,8 @@ public class ClientHandler implements Runnable {
           case "LEAVE_LOBBY":
             this.server.leaveLobby(this);
             this.server.sendLobbyInfoToClients();
+            System.out.println(
+                this.player.getName() + " left the lobby " + this.lobbyJoined.getName() + "\r\n");
             break;
 
           case "CATCH_SHRIMP":

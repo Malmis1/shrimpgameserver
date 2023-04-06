@@ -29,6 +29,7 @@ public class Server {
   private final Map<String, String> ipUsernameMap;
   private final Map<String, Boolean> ipAdminMap;
   private final String adminPassword;
+  public static final String VERSION = "1.6.0";
 
   /**
    * Constructs a new Server object and initializes the lobbies, games, and clients ArrayLists.
@@ -162,9 +163,7 @@ public class Server {
    */
   public void startGame(Lobby lobby) {
     GameSettings gameSettings = new GameSettings(this.lobbyGameSettingsMap.get(lobby));
-    System.out.println("Server class: Players in lobby: " + lobby.getPlayers().size());
     Game game = new Game(lobby.getName(), gameSettings, lobby.getPlayers());
-    System.out.println("Server class: Players in game: " + game.getPlayers());
     this.stringGameMap.put(game.getName(), game);
     for (ClientHandler client : this.getClients()) {
       Player player = client.getPlayer();
@@ -183,12 +182,14 @@ public class Server {
         StringBuilder gameStarted = new StringBuilder("UPDATE GAME_STARTED");
         List<Player> otherPlayers = new ArrayList<>(playerIsland.getPlayers());
         otherPlayers.remove(player);
-        gameStarted.append(" " + otherPlayers.get(0) + " " + otherPlayers.get(1));
+        gameStarted.append(
+            " " + otherPlayers.get(0).getName() + " " + otherPlayers.get(1).getName());
         gameStarted.append(" " + gameSettings.getNumberOfRounds());
         gameStarted.append(" " + gameSettings.getRoundTime());
         gameStarted.append(" " + gameSettings.getMinShrimpPounds());
         gameStarted.append(" " + gameSettings.getMaxShrimpPounds());
         gameStarted.append(" " + playerIsland.getNumber());
+        gameStarted.append(" " + game.getName());
         client.send(gameStarted.toString());
       }
     }
@@ -216,7 +217,6 @@ public class Server {
     }
     for (ClientHandler client : this.getClients()) {
       client.send(lobbyList.toString());
-      System.out.println("Sent lobby list to " + client.getPlayer().getName() + "\r\n");
     }
   }
 
