@@ -13,7 +13,7 @@ public class Player {
   private final ClientHandler clientHandler;
   private int money;
   private int expenses;
-  private Island island;
+  private Game game;
   private int shrimpCaught;
 
   /**
@@ -21,7 +21,6 @@ public class Player {
    * shrimp pounds caught.
    *
    * @param name     The name of the player.
-   * @param money    The amount of money the player has.
    * @param expenses The total expenses of the player.
    */
   public Player(String name, ClientHandler clientHandler, int expenses) {
@@ -65,39 +64,21 @@ public class Player {
   }
 
   /**
-   * Returns the total expenses of the player.
-   *
-   * @return The total expenses of the player.
-   */
-  public int getExpenses() {
-    return this.expenses;
-  }
-
-  /**
-   * Sets the total expenses of the player.
-   *
-   * @param expenses The total expenses of the player.
-   */
-  public void setExpenses(int expenses) {
-    this.expenses = expenses;
-  }
-
-  /**
    * Returns the island on which the player is currently located.
    *
    * @return The island on which the player is currently located.
    */
-  public Island getIsland() {
-    return this.island;
+  public Game getGame() {
+    return this.game;
   }
 
   /**
    * Sets the island on which the player is currently located.
    *
-   * @param island The island on which the player is currently located.
+   * @param game The island on which the player is currently located.
    */
-  public void setIsland(Island island) {
-    this.island = island;
+  public void setGame(Game game) {
+    this.game = game;
   }
 
   /**
@@ -123,15 +104,17 @@ public class Player {
    * @param shrimpPrice the price of shrimp per pound
    * @return the calculated profit of the player
    */
-  public int calculateProfit(int shrimpPrice) {
-    return (this.shrimpCaught * shrimpPrice) - this.expenses;
+  public int calculateProfitValue(int shrimpPrice) {
+    return (shrimpPrice - this.expenses);
   }
 
-  /**
-   * Resets the shrimp pounds caught and expenses of the player to 0.
-   */
-  public void resetStats() {
-    this.shrimpCaught = 0;
-    this.expenses = 0;
+  public boolean hasCaughtShrimp()
+  {
+    boolean hasCaughtShrimp = false;
+    if (this.shrimpCaught != 0)
+    {
+      hasCaughtShrimp = true;
+    }
+    return hasCaughtShrimp;
   }
 }

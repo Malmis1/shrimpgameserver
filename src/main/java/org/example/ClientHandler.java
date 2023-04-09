@@ -9,7 +9,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.Iterator;
 import java.util.Map;
-import org.example.logic.Game;
+import org.example.logic.GameCollection;
 import org.example.logic.Lobby;
 import org.example.logic.Player;
 
@@ -23,7 +23,7 @@ public class ClientHandler implements Runnable {
   private final Server server;
   private BufferedWriter bufferedWriter;
   private BufferedReader bufferedReader;
-  private Game game;
+  private GameCollection gameCollection;
   private Player player;
   private Lobby lobbyJoined;
 

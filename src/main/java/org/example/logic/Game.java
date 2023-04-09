@@ -1,115 +1,101 @@
 package org.example.logic;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
- * The Game class represents a game with a unique identifier, name, game settings, status, and a
- * list of players.
+ * The Island class represents an island where players can catch shrimp.
  * <p>
- * The class provides methods for managing the game, including starting and ending the game,
- * updating player stats,
- * <p>
- * broadcasting messages, sending game results, and disconnecting clients.
+ * It contains information about the name of the island and the current amount of shrimp pounds
+ * available on the island.
  */
 public class Game {
   private final String name;
-  private final GameSettings settings;
-  private String gameStatus;
+  private final int number;
   private final List<Player> players;
-  private final List<Island> islands;
+  private final Map<Integer, Round> rounds;
+  private int currentRoundNum;
 
   /**
-   * Constructs a new Game object with the specified game ID, name, settings, status, and players.
+   * Constructs an Island object with the given name and initial shrimp stock.
    *
-   * @param name     the name of the game
-   * @param settings the settings of the game
-   * @param players  the list of players in the game
+   * @param name the name of the island
    */
-  public Game(String name, GameSettings settings, List<Player> players) {
+  public Game(String name, int number, List<Player> players) {
     this.name = name;
-    this.settings = settings;
-    this.players = new ArrayList<>(players);
-    List<Player> islandPlayers = new ArrayList<Player>();
-    List<Island> islands = new ArrayList<>();
-    int islandNum = 1;
-    for (Player player : players) {
-      if (islandPlayers.isEmpty() || islandPlayers.size() % 3 != 0) {
-        islandPlayers.add(player);
-      }
-      if (islandPlayers.size() % 3 == 0) {
-        Island island = new Island(name, islandNum, new ArrayList<>(islandPlayers));
-        for (Player islandPlayer : islandPlayers) {
-          islandPlayer.setIsland(island);
-        }
-        islands.add(island);
-        islandPlayers.clear();
-        islandNum++;
-      }
-    }
-    this.islands = islands;
+    this.number = number;
+    this.players = players;
+    this.rounds = new HashMap<Integer, Round>();
+    this.currentRoundNum = 1;
   }
 
   /**
-   * Returns the name of the game.
+   * Returns the name of the island.
    *
-   * @return the game name
+   * @return the name of the island
    */
   public String getName() {
     return this.name;
   }
 
-  /**
-   * Returns the settings of the game.
-   *
-   * @return the game settings
-   */
-  public GameSettings getSettings() {
-    return this.settings;
+  public int getNumber() {
+    return this.number;
   }
 
-  /**
-   * Returns the current status of the game.
-   *
-   * @return the game status
-   */
-  public String getGameStatus() {
-    return this.gameStatus;
-  }
-
-  /**
-   * Sets the current status of the game.
-   *
-   * @param gameStatus the new game status
-   */
-  public void setGameStatus(String gameStatus) {
-    this.gameStatus = gameStatus;
-  }
-
-  /**
-   * Returns the list of players in the game.
-   *
-   * @return the list of players
-   */
   public List<Player> getPlayers() {
     return this.players;
   }
 
-  public List<Island> getIslands() {
-    return this.islands;
+  public Map<Integer, Round> getRounds() {
+    return this.rounds;
   }
 
-  /**
-   * Starts the game.
-   */
-  public void start() {
-    // code to start the game
+  public int getCurrentRoundNum() {
+    return this.currentRoundNum;
   }
 
-  /**
-   * Ends the game.
-   */
-  public void end() {
-    // code to end the game
+  public boolean hasPlayer(Player player) {
+    return this.players.contains(player);
+  }
+
+  public boolean allPlayersCaughtShrimp() {
+    boolean allPlayersCaughtShrimp = true;
+    for (Player player : this.players) {
+      if (!player.hasCaughtShrimp()) {
+        allPlayersCaughtShrimp = false;
+      }
+    }
+    return allPlayersCaughtShrimp;
+  }
+
+  public void storeCurrentRound() {
+    Round round = new Round(this.currentRoundNum);
+    Map<Player, Integer> playerShrimpCaughtMap = new HashMap<>();
+    for (Player player : this.players) {
+      playerShrimpCaughtMap.put(player, player.getShrimpCaught());
+      player.setShrimpCaught(0);
+    }
+    round.setPlayerShrimpCaughtMap(playerShrimpCaughtMap);
+    round.calculateShrimpPrice();
+    int shrimpPrice = round.getShrimpPrice();
+    Map<Player, Integer> playerRoundProfitMap = new HashMap<>();
+    for (Player player : this.players)
+    {
+      int roundProfit =
+          player.calculateProfitValue(shrimpPrice) * playerShrimpCaughtMap.get(player);
+      playerRoundProfitMap.put(player, roundProfit);
+    }
+    round.setPlayerRoundProfitMap(playerRoundProfitMap);
+    Map<Player, Integer> playerMoneyMap = new HashMap<>();
+    for (Player player : this.players) {
+      int profit = player.calculateProfitValue(shrimpPrice) * playerShrimpCaughtMap.get(player);
+      int money = player.getMoney() + profit;
+      player.setMoney(money);
+      playerMoneyMap.put(player, money);
+    }
+    round.setPlayerMoneyMap(playerMoneyMap);
+    this.rounds.put(round.getNumber(), round);
+    this.currentRoundNum++;
   }
 }
