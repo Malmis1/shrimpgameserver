@@ -1,5 +1,6 @@
 package org.example.logic;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ public class Game {
   private final String name;
   private final int number;
   private final List<Player> players;
+  private final List<String> messages;
   private final Map<Integer, Round> rounds;
   private int currentRoundNum;
 
@@ -26,6 +28,7 @@ public class Game {
     this.name = name;
     this.number = number;
     this.players = players;
+    this.messages = new ArrayList<String>();
     this.rounds = new HashMap<Integer, Round>();
     this.currentRoundNum = 1;
   }
@@ -45,6 +48,11 @@ public class Game {
 
   public List<Player> getPlayers() {
     return this.players;
+  }
+
+  public List<String> getMessages()
+  {
+    return this.messages;
   }
 
   public Map<Integer, Round> getRounds() {

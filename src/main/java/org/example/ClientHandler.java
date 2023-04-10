@@ -105,6 +105,8 @@ public class ClientHandler implements Runnable {
 
             if (ipUsernameMap.containsKey(ip)) {
               this.send("USERNAME " + ipUsernameMap.get(ip) + " " + isAdmin);
+              this.player = new Player(ipUsernameMap.get(ip), this, 5);
+              this.server.getClients().add(this);
               System.out.println(
                   this.server.getIpUsernameMap().get(ip) + "|" + ip + " reconnected." + "\r\n");
             }
@@ -144,16 +146,17 @@ public class ClientHandler implements Runnable {
             int numberOfPlayers;
             int numberOfRounds;
             int roundTime;
+            String communicationRounds = input[5];
             int minShrimpPounds;
             int maxShrimpPounds;
             try {
               numberOfPlayers = Integer.parseInt(input[2]);
               numberOfRounds = Integer.parseInt(input[3]);
               roundTime = Integer.parseInt(input[4]);
-              minShrimpPounds = Integer.parseInt(input[5]);
-              maxShrimpPounds = Integer.parseInt(input[6]);
+              minShrimpPounds = Integer.parseInt(input[6]);
+              maxShrimpPounds = Integer.parseInt(input[7]);
               this.server.createLobby(lobbyName, numberOfPlayers, numberOfRounds, roundTime,
-                                      minShrimpPounds, maxShrimpPounds);
+                                      communicationRounds, minShrimpPounds, maxShrimpPounds);
               this.send("CREATE_LOBBY_SUCCESS");
               this.server.sendLobbyInfoToClients();
               System.out.println(this.server.getIpUsernameMap().get(ip) + "|" + ip
@@ -230,7 +233,11 @@ public class ClientHandler implements Runnable {
             this.send("CAUGHT_SUCCESSFULLY");
             break;
 
-          case "COMMUNICATE":
+          case "CHAT_MESSAGE":
+            String message = input[1];
+            this.server.addMessageToChat(this, message);
+            System.out.println("Sent message received to client");
+            this.send("MESSAGE_RECEIVED");
             break;
 
           default:

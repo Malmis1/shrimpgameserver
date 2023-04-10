@@ -30,7 +30,7 @@ public class Server {
   private final Map<String, String> ipUsernameMap;
   private final Map<String, Boolean> ipAdminMap;
   private final String adminPassword;
-  public static final String VERSION = "1.6.6";
+  public static final String VERSION = "1.6.7";
 
   /**
    * Constructs a new Server object and initializes the lobbies, games, and clients ArrayLists.
@@ -107,11 +107,12 @@ public class Server {
    *                          name is null or empty
    */
   public void createLobby(String lobbyName, int numPlayers, int numRounds, int roundTime,
-                          int minShrimpPounds, int maxShrimpPounds) {
+                          String communicationRounds, int minShrimpPounds, int maxShrimpPounds) {
     try {
       Lobby lobby = new Lobby(lobbyName, numPlayers);
       GameSettings gameSettings = new GameSettings(numPlayers, numRounds, roundTime,
-                                                   minShrimpPounds, maxShrimpPounds);
+                                                   communicationRounds, minShrimpPounds,
+                                                   maxShrimpPounds);
       this.lobbyGameSettingsMap.put(lobby, gameSettings);
       this.nameLobbyMap.put(lobby.getName(), lobby);
     }
@@ -188,6 +189,7 @@ public class Server {
             " " + otherPlayers.get(0).getName() + " " + otherPlayers.get(1).getName());
         gameStarted.append(" " + gameSettings.getNumberOfRounds());
         gameStarted.append(" " + gameSettings.getRoundTime());
+        gameStarted.append(" " + gameSettings.getCommunicationRounds());
         gameStarted.append(" " + gameSettings.getMinShrimpPounds());
         gameStarted.append(" " + gameSettings.getMaxShrimpPounds());
         gameStarted.append(" " + playerGame.getNumber());
@@ -255,6 +257,18 @@ public class Server {
                                                            .get(otherPlayers.get(1)) + " "
           + round.getPlayerRoundProfitMap().get(otherPlayers.get(1)));
       client.send(roundResults.toString());
+    }
+  }
+
+  public void addMessageToChat(ClientHandler clientHandler, String message) {
+    Player player = clientHandler.getPlayer();
+    Game game = player.getGame();
+    game.getMessages().add(player.getName() + "." + message.replace(".", " "));
+    for (Player gamePlayer : game.getPlayers()) {
+      ClientHandler client = gamePlayer.getClientHandler();
+      StringBuilder chatMessage = new StringBuilder("UPDATE MESSAGE_SENT");
+      chatMessage.append(" " + player.getName() + " " + message);
+      client.send(chatMessage.toString());
     }
   }
 }
