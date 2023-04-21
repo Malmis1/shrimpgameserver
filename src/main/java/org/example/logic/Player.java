@@ -28,7 +28,7 @@ public class Player {
     this.clientHandler = clientHandler;
     this.money = 0;
     this.expenses = expenses;
-    this.shrimpCaught = 0;
+    this.shrimpCaught = -1;
   }
 
   /**
@@ -111,7 +111,7 @@ public class Player {
   public boolean hasCaughtShrimp()
   {
     boolean hasCaughtShrimp = false;
-    if (this.shrimpCaught != 0)
+    if (this.shrimpCaught != -1)
     {
       hasCaughtShrimp = true;
     }

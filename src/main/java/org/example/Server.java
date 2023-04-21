@@ -30,7 +30,7 @@ public class Server {
   private final Map<String, String> ipUsernameMap;
   private final Map<String, Boolean> ipAdminMap;
   private final String adminPassword;
-  public static final String VERSION = "1.6.7";
+  public static final String VERSION = "1.6.9";
 
   /**
    * Constructs a new Server object and initializes the lobbies, games, and clients ArrayLists.
@@ -115,6 +115,7 @@ public class Server {
                                                    maxShrimpPounds);
       this.lobbyGameSettingsMap.put(lobby, gameSettings);
       this.nameLobbyMap.put(lobby.getName(), lobby);
+      System.out.println("Created a new lobby called: " + lobbyName + "\r\n");
     }
     catch (IllegalArgumentException exception) {
       throw new RuntimeException("Failed to create lobby.");
@@ -140,6 +141,7 @@ public class Server {
         finished = true;
       }
     }
+    System.out.println(player.getName() + " joined the lobby " + lobbyName + "\r\n");
   }
 
   /**
@@ -151,13 +153,16 @@ public class Server {
     Player player = clientHandler.getPlayer();
     Iterator<Lobby> iterator = this.lobbyGameSettingsMap.keySet().iterator();
     boolean finished = false;
+    String lobbyName = "";
     while (!finished && iterator.hasNext()) {
       Lobby lobby = iterator.next();
       if (lobby.hasPlayer(player)) {
         lobby.getPlayers().remove(player);
+        lobbyName = lobby.getName();
         finished = true;
       }
     }
+    System.out.println(player.getName() + " left the lobby " + lobbyName + "\r\n");
   }
 
   /**
@@ -200,6 +205,7 @@ public class Server {
     this.lobbyGameSettingsMap.remove(lobby, this.lobbyGameSettingsMap.get(lobby));
     this.nameLobbyMap.remove(lobby.getName(), lobby);
     this.sendLobbyInfoToClients();
+    System.out.println("The game " + lobby.getName() + " has started" + "\r\n");
   }
 
   /**
@@ -222,7 +228,7 @@ public class Server {
     for (ClientHandler client : this.getClients()) {
       client.send(lobbyList.toString());
     }
-    System.out.println("Sent lobby list to clients: " + lobbyList.toString());
+    System.out.println("Sent updated lobby list to all clients" + "\r\n");
   }
 
   public void catchShrimp(ClientHandler clientHandler, int shrimpCaught) {
@@ -233,6 +239,7 @@ public class Server {
       game.storeCurrentRound();
       this.sendRoundResultsToClients(game);
     }
+    System.out.println(player.getName() + " caught " + shrimpCaught + "kg of shrimp" + "\r\n");
   }
 
   public void sendRoundResultsToClients(Game game) {
@@ -258,6 +265,7 @@ public class Server {
           + round.getPlayerRoundProfitMap().get(otherPlayers.get(1)));
       client.send(roundResults.toString());
     }
+    System.out.println("Round " + roundNum + " of " + game.getName() + " has ended" + "\r\n");
   }
 
   public void addMessageToChat(ClientHandler clientHandler, String message) {
@@ -270,6 +278,7 @@ public class Server {
       chatMessage.append(" " + player.getName() + " " + message);
       client.send(chatMessage.toString());
     }
+    System.out.println(player.getName() + " sent (" + message + ") to the chat" + "\r\n");
   }
 }
 

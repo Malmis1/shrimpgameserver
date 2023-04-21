@@ -159,9 +159,7 @@ public class ClientHandler implements Runnable {
                                       communicationRounds, minShrimpPounds, maxShrimpPounds);
               this.send("CREATE_LOBBY_SUCCESS");
               this.server.sendLobbyInfoToClients();
-              System.out.println(this.server.getIpUsernameMap().get(ip) + "|" + ip
-                                 + " created a new lobby called: " + lobbyName + "\r\n");
-            }
+              }
             catch (NumberFormatException exception) {
               this.send("CREATE_LOBBY_FAILED");
               throw new RuntimeException(
@@ -189,7 +187,6 @@ public class ClientHandler implements Runnable {
             }
             catch (RuntimeException exception) {
               this.send("REQUEST_FAILED");
-              System.out.println("Failed to send lobby list: " + lobbyList + "\r\n");
               throw new RuntimeException(exception.getMessage());
             }
             break;
@@ -207,8 +204,6 @@ public class ClientHandler implements Runnable {
                   this.send("LOBBY_JOINED");
                   this.lobbyJoined = lobby;
                   this.server.sendLobbyInfoToClients();
-                  System.out.println(
-                      this.player.getName() + " joined the lobby " + lobbyName + "\r\n");
                 }
                 else {
                   this.send("LOBBY_FULL");
@@ -223,8 +218,6 @@ public class ClientHandler implements Runnable {
           case "LEAVE_LOBBY":
             this.server.leaveLobby(this);
             this.server.sendLobbyInfoToClients();
-            System.out.println(
-                this.player.getName() + " left the lobby " + this.lobbyJoined.getName() + "\r\n");
             break;
 
           case "CATCH_SHRIMP":
@@ -236,7 +229,6 @@ public class ClientHandler implements Runnable {
           case "CHAT_MESSAGE":
             String message = input[1];
             this.server.addMessageToChat(this, message);
-            System.out.println("Sent message received to client");
             this.send("MESSAGE_RECEIVED");
             break;
 

@@ -82,7 +82,7 @@ public class Game {
     Map<Player, Integer> playerShrimpCaughtMap = new HashMap<>();
     for (Player player : this.players) {
       playerShrimpCaughtMap.put(player, player.getShrimpCaught());
-      player.setShrimpCaught(0);
+      player.setShrimpCaught(-1);
     }
     round.setPlayerShrimpCaughtMap(playerShrimpCaughtMap);
     round.calculateShrimpPrice();
