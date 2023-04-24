@@ -42,27 +42,59 @@ public class Game {
     return this.name;
   }
 
+  /**
+   * Gets the unique identifier of the game.
+   * 
+   * @return the number for the game.
+   */
   public int getNumber() {
     return this.number;
   }
 
+  /**
+   * Gets the players of the game.
+   * 
+   * @return a list of all the players of the game.
+   */
   public List<Player> getPlayers() {
     return this.players;
   }
 
+  /**
+   * Gets the messages from the game.
+   * 
+   * @return the messages between the players during the game.
+   */
   public List<String> getMessages()
   {
     return this.messages;
   }
 
+  /**
+   * Gets the rounds of the game.
+   * 
+   * @return the rounds of the game.
+   */
   public Map<Integer, Round> getRounds() {
     return this.rounds;
   }
 
+  /**
+   * Gets the current round number of the game.
+   * 
+   * @return the current round of the game as an {@code int} value.
+   */
   public int getCurrentRoundNum() {
     return this.currentRoundNum;
   }
 
+  /**
+   * Checks if the game contains a specified {@code Player}.
+   * 
+   * @param player the player to check for.
+   * @return {@code true} if the game has the specified player, 
+   * or {@code false} if it does not.
+   */
   public boolean hasPlayer(Player player) {
     return this.players.contains(player);
   }
@@ -77,6 +109,9 @@ public class Game {
     return allPlayersCaughtShrimp;
   }
 
+  /**
+   * Stores the current round information to the list of rounds of the game.
+   */
   public void storeCurrentRound() {
     Round round = new Round(this.currentRoundNum);
     Map<Player, Integer> playerShrimpCaughtMap = new HashMap<>();

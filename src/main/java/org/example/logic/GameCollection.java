@@ -4,13 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The Game class represents a game with a unique identifier, name, game settings, status, and a
- * list of players.
+ * The GameCollection class represents a game collection with a name, game settings, status, a
+ * list of players, and a list of games.
  * <p>
- * The class provides methods for managing the game, including starting and ending the game,
- * updating player stats,
- * <p>
- * broadcasting messages, sending game results, and disconnecting clients.
+ * The class provides methods for managing the information about the games, including 
+ * getting players, and getting the game status.
  */
 public class GameCollection {
   private final String name;
@@ -95,6 +93,11 @@ public class GameCollection {
     return this.players;
   }
 
+  /**
+   * Gets the islands.
+   * 
+   * @return a list of the games.
+   */
   public List<Game> getIslands() {
     return this.games;
   }

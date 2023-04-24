@@ -4,11 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Represents a collection of usernames used for assigning names to players.
+ */
 public class UsernameCollection
 {
     private final List<String> usernames;
     private final Random randomizer;
 
+    /**
+     * Creates a new instance of {@code UsernameCollection} with a list of predefined usernames.
+     */
     public UsernameCollection()
     {
         this.usernames = new ArrayList<String>();
@@ -16,6 +22,12 @@ public class UsernameCollection
         this.randomizer = new Random();
     }
 
+    /**
+     * Adds a specified username to the list of usernames.
+     * 
+     * @param username the username to add.
+     * @throws IllegalArgumentException if the given username is {@code null} or blank.
+     */
     public void addUsername(String username)
     {
         if (username == null)
@@ -29,11 +41,19 @@ public class UsernameCollection
         this.usernames.add(username);
     }
 
+    /**
+     * Gets all the usernames from the collection.
+     * 
+     * @return a list of all the usernames.
+     */
     public List<String> getUsernames()
     {
         return this.usernames;
     }
 
+    /**
+     * Fills the list of usernames with predefined usernames.
+     */
     public void fillCollectionWithUsernames()
     {
         this.addUsername("Commodore");
@@ -331,6 +351,11 @@ public class UsernameCollection
         this.addUsername("Plankton");
     }
 
+    /**
+     * Gets a random username from the list of usernames.
+     * 
+     * @return a random username.
+     */
     public String getRandomUsername()
     {
         int randomIndex = randomizer.nextInt(this.usernames.size());

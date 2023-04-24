@@ -3,9 +3,9 @@ package org.example.logic;
 /**
  * The GameSettings class represents the settings of a game.
  * <p>
- * It contains information such as the number of players, number of rounds,
- * <p>
- * round time, minimum shrimp pounds to catch, and maximum shrimp pounds to catch.
+ * It contains information such as the number of players, number of rounds, 
+ * round time, communication rounds, communication round time, minimum shrimp pounds to catch, 
+ * and maximum shrimp pounds to catch.
  */
 public class GameSettings {
   private int numberOfPlayers;
@@ -22,6 +22,8 @@ public class GameSettings {
    * @param numberOfPlayers the number of players in the game.
    * @param numberOfRounds  the number of rounds in the game.
    * @param roundTime       the time (in seconds) for each round.
+   * @param communicationRounds the communication rounds of the game.
+   * @param communicationRoundTime the time (in seconds) for communication rounds.
    * @param minShrimpPounds the minimum amount of shrimp pounds that can be caught in a round.
    * @param maxShrimpPounds the maximum amount of shrimp pounds that can be caught in a round.
    */
@@ -37,6 +39,11 @@ public class GameSettings {
     this.maxShrimpPounds = maxShrimpPounds;
   }
 
+  /**
+   * Creates a new instance of {@code GameSettings} from a preexisting instance.
+   * 
+   * @param gameSettings the {@code GameSettings} to copy.
+   */
   public GameSettings(GameSettings gameSettings) {
     this.numberOfPlayers = gameSettings.getNumberOfPlayers();
     this.numberOfRounds = gameSettings.getNumberOfRounds();
@@ -101,21 +108,41 @@ public class GameSettings {
     this.roundTime = roundTime;
   }
 
+  /**
+   * Gets the communication rounds of the game.
+   * 
+   * @return all the communication rounds as a {@code String}.
+   */
   public String getCommunicationRounds()
   {
     return this.communicationRounds;
   }
 
+  /**
+   * Sets the communication rounds of the game.
+   * 
+   * @param communicationRounds the communication rounds in the format: "4,6".
+   */
   public void setCommunicationRounds(String communicationRounds)
   {
     this.communicationRounds = communicationRounds;
   }
 
+  /**
+   * Gets the communication round time.
+   * 
+   * @return the communication round time (in seconds).
+   */
   public int getCommunicationRoundTime()
   {
     return this.communicationRoundTime;
   }
 
+  /**
+   * Sets the communication round time.
+   * 
+   * @param communicationRoundTime the time (in seconds) during the communication rounds.
+   */
   public void setCommunicationRoundTime(int communicationRoundTime)
   {
     this.communicationRoundTime = communicationRoundTime;

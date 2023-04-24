@@ -66,6 +66,11 @@ public class Lobby
         return this.maxPlayers;
     }
 
+    /**
+     * Checks if the lobby is filled with the maximum amount of players.
+     * 
+     * @return {@code true} if the lobby is full, or {@code false} if it is not.
+     */
     public boolean isFull()
     {
         boolean isFull = false;
@@ -76,6 +81,12 @@ public class Lobby
         return isFull;
     }
 
+    /**
+     * Checks if the lobby has a specified {@code Player}.
+     * 
+     * @param player the player to check for.
+     * @return {@code true} if the player is in the lobby, or {@code false} if not.
+     */
     public boolean hasPlayer(Player player)
     {
         return this.players.contains(player);
