@@ -108,6 +108,11 @@ public class Player {
     return (shrimpPrice - this.expenses);
   }
 
+  /**
+   * Checks if the player has caught shrimp.
+   * 
+   * @return {@code true} if the player has caught shrimp, or {@code false} if not.
+   */
   public boolean hasCaughtShrimp()
   {
     boolean hasCaughtShrimp = false;
