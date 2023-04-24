@@ -46,10 +46,20 @@ public class Server {
     this.adminPassword = "detteerbra";
   }
 
+  /**
+   * Gets the clients of the server.
+   * 
+   * @return a list of all the clients of the server.
+   */
   public List<ClientHandler> getClients() {
     return this.clients;
   }
 
+  /**
+   * Gets the username collection of the server.
+   * 
+   * @return a collection of usernames.
+   */
   public UsernameCollection getUsernameCollection() {
     return this.usernameCollection;
   }
@@ -62,6 +72,11 @@ public class Server {
     return this.ipAdminMap;
   }
 
+  /**
+   * Gets the password used for promoting a user to an admin.
+   * 
+   * @return the admin password.
+   */
   public String getAdminPassword() {
     return this.adminPassword;
   }
@@ -75,10 +90,18 @@ public class Server {
     return this.lobbyGameSettingsMap;
   }
 
+  /**
+   * Gets a map of lobbies with their respective names.
+   * 
+   * @return a map of lobbies and names of the lobbies.
+   */
   public Map<String, Lobby> getNameLobbyMap() {
     return this.nameLobbyMap;
   }
 
+  /**
+   * Starts the server application.
+   */
   public void start() {
     try (ServerSocket serverSocket = new ServerSocket(PORT)) {
       System.out.println("Server started on port " + PORT + "\r\n");
@@ -166,7 +189,9 @@ public class Server {
   }
 
   /**
-   * Starts the specified game.
+   * Starts a specified game.
+   * 
+   * @param lobby the game to start.
    */
   public void startGame(Lobby lobby) {
     GameSettings gameSettings = new GameSettings(this.lobbyGameSettingsMap.get(lobby));
@@ -217,6 +242,9 @@ public class Server {
     this.stringGameMap.remove(gameCollection.getName(), gameCollection);
   }
 
+  /**
+   * Sends information about lobbies to the clients.
+   */
   public void sendLobbyInfoToClients() {
     StringBuilder lobbyList = new StringBuilder("UPDATE LOBBY");
     for (Lobby lobby : this.getLobbyGameSettingsMap().keySet()) {
@@ -231,6 +259,12 @@ public class Server {
     System.out.println("Sent updated lobby list to all clients" + "\r\n");
   }
 
+  /**
+   * Catches a specified amount of shrimp.
+   * 
+   * @param clientHandler the clientHandler for the player that catches shrimp.
+   * @param shrimpCaught the amount of shrimp to catch.
+   */
   public void catchShrimp(ClientHandler clientHandler, int shrimpCaught) {
     Player player = clientHandler.getPlayer();
     player.setShrimpCaught(shrimpCaught);
@@ -242,6 +276,11 @@ public class Server {
     System.out.println(player.getName() + " caught " + shrimpCaught + "kg of shrimp" + "\r\n");
   }
 
+  /**
+   * Sends the round results to all the clients.
+   * 
+   * @param game the game to get the round information from.
+   */
   public void sendRoundResultsToClients(Game game) {
     int roundNum = game.getCurrentRoundNum() - 1;
     Round round = game.getRounds().get(roundNum);
@@ -268,6 +307,12 @@ public class Server {
     System.out.println("Round " + roundNum + " of " + game.getName() + " has ended" + "\r\n");
   }
 
+  /**
+   * Adds a specified message to the chat.
+   * 
+   * @param clientHandler the clientHandler for the player that sends the message.
+   * @param message the message to add.
+   */
   public void addMessageToChat(ClientHandler clientHandler, String message) {
     Player player = clientHandler.getPlayer();
     Game game = player.getGame();
