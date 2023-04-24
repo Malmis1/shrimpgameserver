@@ -22,6 +22,8 @@ public class GameSettings {
    * @param numberOfPlayers the number of players in the game.
    * @param numberOfRounds  the number of rounds in the game.
    * @param roundTime       the time (in seconds) for each round.
+   * @param communicationRounds the communication rounds of the game.
+   * @param communicationRoundTime the time (in seconds) for communication rounds.
    * @param minShrimpPounds the minimum amount of shrimp pounds that can be caught in a round.
    * @param maxShrimpPounds the maximum amount of shrimp pounds that can be caught in a round.
    */
