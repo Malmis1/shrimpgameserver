@@ -22,6 +22,7 @@ import org.example.logic.UsernameCollection;
  */
 public class Server {
   private static final int PORT = 8080;
+  public static final String VERSION = "1.7.0";
   private final Map<Lobby, GameSettings> lobbyGameSettingsMap;
   private final Map<String, Lobby> nameLobbyMap;
   private final Map<String, GameCollection> stringGameMap;
@@ -30,7 +31,6 @@ public class Server {
   private final Map<String, String> ipUsernameMap;
   private final Map<String, Boolean> ipAdminMap;
   private final String adminPassword;
-  public static final String VERSION = "1.6.9";
 
   /**
    * Constructs a new Server object and initializes the lobbies, games, and clients ArrayLists.
@@ -130,11 +130,12 @@ public class Server {
    *                          name is null or empty
    */
   public void createLobby(String lobbyName, int numPlayers, int numRounds, int roundTime,
-                          String communicationRounds, int minShrimpPounds, int maxShrimpPounds) {
+                          String communicationRounds, int communicationRoundTime,
+                          int minShrimpPounds, int maxShrimpPounds) {
     try {
       Lobby lobby = new Lobby(lobbyName, numPlayers);
       GameSettings gameSettings = new GameSettings(numPlayers, numRounds, roundTime,
-                                                   communicationRounds, minShrimpPounds,
+                                                   communicationRounds, communicationRoundTime, minShrimpPounds,
                                                    maxShrimpPounds);
       this.lobbyGameSettingsMap.put(lobby, gameSettings);
       this.nameLobbyMap.put(lobby.getName(), lobby);
@@ -220,6 +221,7 @@ public class Server {
         gameStarted.append(" " + gameSettings.getNumberOfRounds());
         gameStarted.append(" " + gameSettings.getRoundTime());
         gameStarted.append(" " + gameSettings.getCommunicationRounds());
+        gameStarted.append(" " + gameSettings.getCommunicationRoundTime());
         gameStarted.append(" " + gameSettings.getMinShrimpPounds());
         gameStarted.append(" " + gameSettings.getMaxShrimpPounds());
         gameStarted.append(" " + playerGame.getNumber());

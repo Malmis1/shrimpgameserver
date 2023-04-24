@@ -147,16 +147,18 @@ public class ClientHandler implements Runnable {
             int numberOfRounds;
             int roundTime;
             String communicationRounds = input[5];
+            int communicationRoundTime;
             int minShrimpPounds;
             int maxShrimpPounds;
             try {
               numberOfPlayers = Integer.parseInt(input[2]);
               numberOfRounds = Integer.parseInt(input[3]);
               roundTime = Integer.parseInt(input[4]);
-              minShrimpPounds = Integer.parseInt(input[6]);
-              maxShrimpPounds = Integer.parseInt(input[7]);
+              communicationRoundTime = Integer.parseInt(input[6]);
+              minShrimpPounds = Integer.parseInt(input[7]);
+              maxShrimpPounds = Integer.parseInt(input[8]);
               this.server.createLobby(lobbyName, numberOfPlayers, numberOfRounds, roundTime,
-                                      communicationRounds, minShrimpPounds, maxShrimpPounds);
+                                      communicationRounds, communicationRoundTime, minShrimpPounds, maxShrimpPounds);
               this.send("CREATE_LOBBY_SUCCESS");
               this.server.sendLobbyInfoToClients();
               }
