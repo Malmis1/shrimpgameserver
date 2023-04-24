@@ -108,21 +108,41 @@ public class GameSettings {
     this.roundTime = roundTime;
   }
 
+  /**
+   * Gets the communication rounds of the game.
+   * 
+   * @return all the communication rounds as a {@code String}.
+   */
   public String getCommunicationRounds()
   {
     return this.communicationRounds;
   }
 
+  /**
+   * Sets the communication rounds of the game.
+   * 
+   * @param communicationRounds the communication rounds in the format: "4,6".
+   */
   public void setCommunicationRounds(String communicationRounds)
   {
     this.communicationRounds = communicationRounds;
   }
 
+  /**
+   * Gets the communication round time.
+   * 
+   * @return the communication round time (in seconds).
+   */
   public int getCommunicationRoundTime()
   {
     return this.communicationRoundTime;
   }
 
+  /**
+   * Sets the communication round time.
+   * 
+   * @param communicationRoundTime the time (in seconds) during the communication rounds.
+   */
   public void setCommunicationRoundTime(int communicationRoundTime)
   {
     this.communicationRoundTime = communicationRoundTime;
