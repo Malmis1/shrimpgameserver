@@ -34,6 +34,11 @@ public class GameSettings {
     this.maxShrimpPounds = maxShrimpPounds;
   }
 
+  /**
+   * Creates a new instance of {@code GameSettings} from a preexisting instance.
+   * 
+   * @param gameSettings the {@code GameSettings} to copy.
+   */
   public GameSettings(GameSettings gameSettings) {
     this.numberOfPlayers = gameSettings.getNumberOfPlayers();
     this.numberOfRounds = gameSettings.getNumberOfRounds();
