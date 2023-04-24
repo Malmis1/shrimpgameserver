@@ -3,9 +3,9 @@ package org.example.logic;
 /**
  * The GameSettings class represents the settings of a game.
  * <p>
- * It contains information such as the number of players, number of rounds,
- * <p>
- * round time, minimum shrimp pounds to catch, and maximum shrimp pounds to catch.
+ * It contains information such as the number of players, number of rounds, 
+ * round time, communication rounds, communication round time, minimum shrimp pounds to catch, 
+ * and maximum shrimp pounds to catch.
  */
 public class GameSettings {
   private int numberOfPlayers;
