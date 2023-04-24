@@ -124,6 +124,8 @@ public class Server {
    * @param numPlayers      the maximum number of players allowed in the lobby
    * @param numRounds       the number of rounds in the game
    * @param roundTime       the time limit in seconds for each round
+   * @param communicationRounds the communication rounds of the game
+   * @param communicationRoundTime the time (in seconds) during the communication rounds
    * @param minShrimpPounds the minimum amount of shrimp that can be caught in a round
    * @param maxShrimpPounds the maximum amount of shrimp that can be caught in a round
    * @throws RuntimeException if there is an error creating the lobby, such as if the lobby
