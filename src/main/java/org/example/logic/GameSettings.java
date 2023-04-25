@@ -4,8 +4,8 @@ package org.example.logic;
  * The GameSettings class represents the settings of a game.
  * <p>
  * It contains information such as the number of players, number of rounds, 
- * round time, communication rounds, communication round time, minimum shrimp pounds to catch, 
- * and maximum shrimp pounds to catch.
+ * round time, communication rounds, communication round time, minimum shrimp kilograms to catch, 
+ * and maximum shrimp kilograms to catch.
  */
 public class GameSettings {
   private int numberOfPlayers;
@@ -13,8 +13,8 @@ public class GameSettings {
   private int roundTime;
   private String communicationRounds;
   private int communicationRoundTime;
-  private int minShrimpPounds;
-  private int maxShrimpPounds;
+  private int minShrimpKilograms;
+  private int maxShrimpKilograms;
 
   /**
    * Constructor for the GameSettings class.
@@ -24,19 +24,19 @@ public class GameSettings {
    * @param roundTime       the time (in seconds) for each round.
    * @param communicationRounds the communication rounds of the game.
    * @param communicationRoundTime the time (in seconds) for communication rounds.
-   * @param minShrimpPounds the minimum amount of shrimp pounds that can be caught in a round.
-   * @param maxShrimpPounds the maximum amount of shrimp pounds that can be caught in a round.
+   * @param minShrimpKilograms the minimum amount of shrimp kilograms that can be caught in a round.
+   * @param maxShrimpKilograms the maximum amount of shrimp kilograms that can be caught in a round.
    */
   public GameSettings(int numberOfPlayers, int numberOfRounds, int roundTime,
-                      String communicationRounds, int communicationRoundTime, int minShrimpPounds,
-                      int maxShrimpPounds) {
+                      String communicationRounds, int communicationRoundTime, int minShrimpKilograms,
+                      int maxShrimpKilograms) {
     this.numberOfPlayers = numberOfPlayers;
     this.numberOfRounds = numberOfRounds;
     this.roundTime = roundTime;
     this.communicationRounds = communicationRounds;
     this.communicationRoundTime = communicationRoundTime;
-    this.minShrimpPounds = minShrimpPounds;
-    this.maxShrimpPounds = maxShrimpPounds;
+    this.minShrimpKilograms = minShrimpKilograms;
+    this.maxShrimpKilograms = maxShrimpKilograms;
   }
 
   /**
@@ -50,8 +50,8 @@ public class GameSettings {
     this.roundTime = gameSettings.getRoundTime();
     this.communicationRounds = gameSettings.getCommunicationRounds();
     this.communicationRoundTime = gameSettings.getCommunicationRoundTime();
-    this.minShrimpPounds = gameSettings.getMinShrimpPounds();
-    this.maxShrimpPounds = gameSettings.getMaxShrimpPounds();
+    this.minShrimpKilograms = gameSettings.getMinShrimpKilograms();
+    this.maxShrimpKilograms = gameSettings.getMaxShrimpKilograms();
   }
 
   /**
@@ -149,38 +149,38 @@ public class GameSettings {
   }
 
   /**
-   * Getter for the minimum amount of shrimp pounds that can be caught in a round.
+   * Getter for the minimum amount of shrimp kilograms that can be caught in a round.
    *
-   * @return the minimum amount of shrimp pounds that can be caught in a round.
+   * @return the minimum amount of shrimp kilograms that can be caught in a round.
    */
-  public int getMinShrimpPounds() {
-    return this.minShrimpPounds;
+  public int getMinShrimpKilograms() {
+    return this.minShrimpKilograms;
   }
 
   /**
-   * Setter for the minimum amount of shrimp pounds that can be caught in a round.
+   * Setter for the minimum amount of shrimp kilograms that can be caught in a round.
    *
-   * @param minShrimpPounds the minimum amount of shrimp pounds that can be caught in a round.
+   * @param minShrimpKilograms the minimum amount of shrimp kilograms that can be caught in a round.
    */
-  public void setMinShrimpPounds(int minShrimpPounds) {
-    this.minShrimpPounds = minShrimpPounds;
+  public void setMinShrimpKilograms(int minShrimpKilograms) {
+    this.minShrimpKilograms = minShrimpKilograms;
   }
 
   /**
-   * Getter for the maximum amount of shrimp pounds that can be caught in a round.
+   * Getter for the maximum amount of shrimp kilograms that can be caught in a round.
    *
-   * @return the maximum amount of shrimp pounds that can be caught in a round.
+   * @return the maximum amount of shrimp kilograms that can be caught in a round.
    */
-  public int getMaxShrimpPounds() {
-    return this.maxShrimpPounds;
+  public int getMaxShrimpKilograms() {
+    return this.maxShrimpKilograms;
   }
 
   /**
-   * Sets the maximum number of shrimp pounds that can be caught in a round.
+   * Sets the maximum number of shrimp kilograms that can be caught in a round.
    *
-   * @param maxShrimpPounds the maximum number of shrimp pounds that can be caught in a round.
+   * @param maxShrimpKilograms the maximum number of shrimp kilograms that can be caught in a round.
    */
-  public void setMaxShrimpPounds(int maxShrimpPounds) {
-    this.maxShrimpPounds = maxShrimpPounds;
+  public void setMaxShrimpKilograms(int maxShrimpKilograms) {
+    this.maxShrimpKilograms = maxShrimpKilograms;
   }
 }

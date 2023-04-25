@@ -126,19 +126,19 @@ public class Server {
    * @param roundTime       the time limit in seconds for each round
    * @param communicationRounds the communication rounds of the game
    * @param communicationRoundTime the time (in seconds) during the communication rounds
-   * @param minShrimpPounds the minimum amount of shrimp that can be caught in a round
-   * @param maxShrimpPounds the maximum amount of shrimp that can be caught in a round
+   * @param minShrimpKilograms the minimum amount of shrimp that can be caught in a round
+   * @param maxShrimpKilograms the maximum amount of shrimp that can be caught in a round
    * @throws RuntimeException if there is an error creating the lobby, such as if the lobby
    *                          name is null or empty
    */
   public void createLobby(String lobbyName, int numPlayers, int numRounds, int roundTime,
                           String communicationRounds, int communicationRoundTime,
-                          int minShrimpPounds, int maxShrimpPounds) {
+                          int minShrimpKilograms, int maxShrimpKilograms) {
     try {
       Lobby lobby = new Lobby(lobbyName, numPlayers);
       GameSettings gameSettings = new GameSettings(numPlayers, numRounds, roundTime,
-                                                   communicationRounds, communicationRoundTime, minShrimpPounds,
-                                                   maxShrimpPounds);
+                                                   communicationRounds, communicationRoundTime, minShrimpKilograms,
+                                                   maxShrimpKilograms);
       this.lobbyGameSettingsMap.put(lobby, gameSettings);
       this.nameLobbyMap.put(lobby.getName(), lobby);
       System.out.println("Created a new lobby called: " + lobbyName + "\r\n");
@@ -224,8 +224,8 @@ public class Server {
         gameStarted.append(" " + gameSettings.getRoundTime());
         gameStarted.append(" " + gameSettings.getCommunicationRounds());
         gameStarted.append(" " + gameSettings.getCommunicationRoundTime());
-        gameStarted.append(" " + gameSettings.getMinShrimpPounds());
-        gameStarted.append(" " + gameSettings.getMaxShrimpPounds());
+        gameStarted.append(" " + gameSettings.getMinShrimpKilograms());
+        gameStarted.append(" " + gameSettings.getMaxShrimpKilograms());
         gameStarted.append(" " + playerGame.getNumber());
         gameStarted.append(" " + gameCollection.getName());
         client.send(gameStarted.toString());
