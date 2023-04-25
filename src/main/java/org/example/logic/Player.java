@@ -6,7 +6,7 @@ import org.example.ClientHandler;
  * The Player class represents a player in the game. It contains information about the player
  * such as name,
  * <p>
- * money, expenses, island and shrimp pounds caught.
+ * money, expenses, island and shrimp kilograms caught.
  */
 public class Player {
   private final String name;
@@ -18,7 +18,7 @@ public class Player {
 
   /**
    * Constructor for creating a Player object with the given name, money, expenses, island and
-   * shrimp pounds caught.
+   * shrimp kilograms caught.
    *
    * @param name     The name of the player.
    * @param expenses The total expenses of the player.
@@ -82,18 +82,18 @@ public class Player {
   }
 
   /**
-   * Returns the total amount of shrimp pounds caught by the player.
+   * Returns the total amount of shrimp kilograms caught by the player.
    *
-   * @return The total amount of shrimp pounds caught by the player.
+   * @return The total amount of shrimp kilograms caught by the player.
    */
   public int getShrimpCaught() {
     return this.shrimpCaught;
   }
 
   /**
-   * Sets the total amount of shrimp pounds caught by the player.
+   * Sets the total amount of shrimp kilograms caught by the player.
    *
-   * @param shrimpCaught The total amount of shrimp pounds caught by the player.
+   * @param shrimpCaught The total amount of shrimp kilograms caught by the player.
    */
   public void setShrimpCaught(int shrimpCaught) {
     this.shrimpCaught = shrimpCaught;
@@ -101,7 +101,7 @@ public class Player {
   /**
    * Calculates the profit of the player based on the price of shrimp and the expenses incurred.
    *
-   * @param shrimpPrice the price of shrimp per pound
+   * @param shrimpPrice the price of shrimp per kilogram
    * @return the calculated profit of the player
    */
   public int calculateProfitValue(int shrimpPrice) {

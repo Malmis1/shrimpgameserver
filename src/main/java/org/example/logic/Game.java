@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * The Island class represents an island where players can catch shrimp.
  * <p>
- * It contains information about the name of the island and the current amount of shrimp pounds
+ * It contains information about the name of the island and the current amount of shrimp kilograms
  * available on the island.
  */
 public class Game {
