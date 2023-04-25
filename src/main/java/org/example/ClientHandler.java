@@ -220,6 +220,7 @@ public class ClientHandler implements Runnable {
           case "LEAVE_LOBBY":
             this.server.leaveLobby(this);
             this.server.sendLobbyInfoToClients();
+            this.send("LEFT_SUCCESS");
             break;
 
           case "CATCH_SHRIMP":

@@ -3,7 +3,10 @@ package org.example;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -48,7 +51,7 @@ public class Server {
 
   /**
    * Gets the clients of the server.
-   * 
+   *
    * @return a list of all the clients of the server.
    */
   public List<ClientHandler> getClients() {
@@ -57,7 +60,7 @@ public class Server {
 
   /**
    * Gets the username collection of the server.
-   * 
+   *
    * @return a collection of usernames.
    */
   public UsernameCollection getUsernameCollection() {
@@ -74,7 +77,7 @@ public class Server {
 
   /**
    * Gets the password used for promoting a user to an admin.
-   * 
+   *
    * @return the admin password.
    */
   public String getAdminPassword() {
@@ -92,7 +95,7 @@ public class Server {
 
   /**
    * Gets a map of lobbies with their respective names.
-   * 
+   *
    * @return a map of lobbies and names of the lobbies.
    */
   public Map<String, Lobby> getNameLobbyMap() {
@@ -120,14 +123,14 @@ public class Server {
   /**
    * Creates a new lobby with the specified settings and adds it to the lobbies list.
    *
-   * @param lobbyName       the name of the lobby
-   * @param numPlayers      the maximum number of players allowed in the lobby
-   * @param numRounds       the number of rounds in the game
-   * @param roundTime       the time limit in seconds for each round
-   * @param communicationRounds the communication rounds of the game
+   * @param lobbyName              the name of the lobby
+   * @param numPlayers             the maximum number of players allowed in the lobby
+   * @param numRounds              the number of rounds in the game
+   * @param roundTime              the time limit in seconds for each round
+   * @param communicationRounds    the communication rounds of the game
    * @param communicationRoundTime the time (in seconds) during the communication rounds
-   * @param minShrimpKilograms the minimum amount of shrimp that can be caught in a round
-   * @param maxShrimpKilograms the maximum amount of shrimp that can be caught in a round
+   * @param minShrimpKilograms     the minimum amount of shrimp that can be caught in a round
+   * @param maxShrimpKilograms     the maximum amount of shrimp that can be caught in a round
    * @throws RuntimeException if there is an error creating the lobby, such as if the lobby
    *                          name is null or empty
    */
@@ -137,8 +140,8 @@ public class Server {
     try {
       Lobby lobby = new Lobby(lobbyName, numPlayers);
       GameSettings gameSettings = new GameSettings(numPlayers, numRounds, roundTime,
-                                                   communicationRounds, communicationRoundTime, minShrimpKilograms,
-                                                   maxShrimpKilograms);
+                                                   communicationRounds, communicationRoundTime,
+                                                   minShrimpKilograms, maxShrimpKilograms);
       this.lobbyGameSettingsMap.put(lobby, gameSettings);
       this.nameLobbyMap.put(lobby.getName(), lobby);
       System.out.println("Created a new lobby called: " + lobbyName + "\r\n");
@@ -193,7 +196,7 @@ public class Server {
 
   /**
    * Starts a specified game.
-   * 
+   *
    * @param lobby the game to start.
    */
   public void startGame(Lobby lobby) {
@@ -265,9 +268,9 @@ public class Server {
 
   /**
    * Catches a specified amount of shrimp.
-   * 
+   *
    * @param clientHandler the clientHandler for the player that catches shrimp.
-   * @param shrimpCaught the amount of shrimp to catch.
+   * @param shrimpCaught  the amount of shrimp to catch.
    */
   public void catchShrimp(ClientHandler clientHandler, int shrimpCaught) {
     Player player = clientHandler.getPlayer();
@@ -282,7 +285,7 @@ public class Server {
 
   /**
    * Sends the round results to all the clients.
-   * 
+   *
    * @param game the game to get the round information from.
    */
   public void sendRoundResultsToClients(Game game) {
@@ -313,9 +316,9 @@ public class Server {
 
   /**
    * Adds a specified message to the chat.
-   * 
+   *
    * @param clientHandler the clientHandler for the player that sends the message.
-   * @param message the message to add.
+   * @param message       the message to add.
    */
   public void addMessageToChat(ClientHandler clientHandler, String message) {
     Player player = clientHandler.getPlayer();
@@ -324,10 +327,23 @@ public class Server {
     for (Player gamePlayer : game.getPlayers()) {
       ClientHandler client = gamePlayer.getClientHandler();
       StringBuilder chatMessage = new StringBuilder("UPDATE MESSAGE_SENT");
-      chatMessage.append(" " + player.getName() + " " + message);
+      Date now = new Date();
+      Calendar calendar = Calendar.getInstance();
+      calendar.setTime(now);
+      calendar.add(Calendar.HOUR_OF_DAY, 2);
+      SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+      String formattedTime = dateFormat.format(calendar.getTime());
+      chatMessage.append(" " + player.getName() + " " + message + " " + formattedTime);
       client.send(chatMessage.toString());
     }
-    System.out.println(player.getName() + " sent (" + message + ") to the chat" + "\r\n");
+    Date now = new Date();
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTime(now);
+    calendar.add(Calendar.HOUR_OF_DAY, 2);
+    SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+    String formattedTime = dateFormat.format(calendar.getTime());
+    System.out.println(
+        player.getName() + " sent (" + message + ") to the chat at " + formattedTime + "\r\n");
   }
 }
 
