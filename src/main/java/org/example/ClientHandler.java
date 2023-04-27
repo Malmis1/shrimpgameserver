@@ -10,7 +10,6 @@ import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.Map;
-import org.example.logic.GameCollection;
 import org.example.logic.Lobby;
 import org.example.logic.Player;
 
@@ -24,7 +23,6 @@ public class ClientHandler implements Runnable {
   private final Server server;
   private BufferedWriter bufferedWriter;
   private BufferedReader bufferedReader;
-  private GameCollection gameCollection;
   private Player player;
   private Lobby lobbyJoined;
 
@@ -32,6 +30,7 @@ public class ClientHandler implements Runnable {
    * Constructor for the ClientHandler class.
    *
    * @param socket a Socket object representing the socket used to communicate with the client
+   * @param server the main server application
    */
   public ClientHandler(Socket socket, Server server) {
     this.clientSocket = socket;
@@ -264,7 +263,4 @@ public class ClientHandler implements Runnable {
 
     }
   }
-
-
 }
-

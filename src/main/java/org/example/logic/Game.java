@@ -21,9 +21,12 @@ public class Game {
   private int currentRoundNum;
 
   /**
-   * Constructs an Island object with the given name and initial shrimp stock.
+   * Creates a new instance of {@code Game}.
    *
-   * @param name the name of the island
+   * @param name the name of the island.
+   * @param number the unique identifier for the game.
+   * @param players the list of players of the game.
+   * @param gameSettings the settings of the game.
    */
   public Game(String name, int number, List<Player> players, GameSettings gameSettings) {
     this.name = name;
@@ -35,6 +38,11 @@ public class Game {
     this.currentRoundNum = 1;
   }
 
+  /**
+   * Creates a new instance of {@code Game} from another {@code Game} object.
+   * 
+   * @param game the {@code Game} object to copy from.
+   */
   public Game(Game game)
   {
     this.name = game.getName();
@@ -73,6 +81,11 @@ public class Game {
     return this.players;
   }
 
+  /**
+   * Gets the settings of the game.
+   * 
+   * @return a {@code GameSettings} object representing the settings of the game.
+   */
   public GameSettings getGameSettings()
   {
     return this.gameSettings;
@@ -116,6 +129,11 @@ public class Game {
     return this.players.contains(player);
   }
 
+  /**
+   * Checks if all the players have caught shrimp.
+   * 
+   * @return {@code true} if all the players have caught shrimp, or {@code false} if not.
+   */
   public boolean allPlayersCaughtShrimp() {
     boolean allPlayersCaughtShrimp = true;
     for (Player player : this.players) {

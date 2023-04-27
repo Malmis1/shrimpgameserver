@@ -4,9 +4,7 @@ import org.example.ClientHandler;
 
 /**
  * The Player class represents a player in the game. It contains information about the player
- * such as name,
- * <p>
- * money, expenses, island and shrimp kilograms caught.
+ * such as name, money, expenses, island and shrimp kilograms caught.
  */
 public class Player {
   private final String name;
@@ -21,8 +19,9 @@ public class Player {
    * Constructor for creating a Player object with the given name, money, expenses, island and
    * shrimp kilograms caught.
    *
-   * @param name     The name of the player.
-   * @param expenses The total expenses of the player.
+   * @param name     the name of the player.
+   * @param expenses the total expenses of the player.
+   * @param clientHandler the handler for communication between the server and a client.
    */
   public Player(String name, ClientHandler clientHandler, int expenses) {
     this.name = name;
@@ -42,6 +41,12 @@ public class Player {
     return this.name;
   }
 
+  /**
+   * Returns the {@code ClientHandler} object of the player.
+   * 
+   * @return a {@code ClientHandler} object representing the handler for 
+   * communication between the server and a client.
+   */
   public ClientHandler getClientHandler()
   {
     return this.clientHandler;
@@ -65,11 +70,21 @@ public class Player {
     this.money = money;
   }
 
+  /**
+   * Checks if the player is an admin.
+   * 
+   * @return {@code true} if the player is an admin, or {@code false} if not.
+   */
   public boolean isAdmin()
   {
     return this.isAdmin;
   }
 
+  /**
+   * Sets wether or not the player is an admin.
+   * 
+   * @param isAdmin a {@code boolean} value representing wether or not the player is an admin.
+   */
   public void setIsAdmin(boolean isAdmin)
   {
     this.isAdmin = isAdmin;

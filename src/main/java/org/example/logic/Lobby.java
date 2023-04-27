@@ -18,6 +18,7 @@ public class Lobby
      * Creates a new lobby with the given name.
      *
      * @param name the name of the lobby
+     * @param maxPlayers the maximum allowable amount of players in the lobby
      * @throws IllegalArgumentException if the name is null or empty
      */
     public Lobby(String name, int maxPlayers)
@@ -61,6 +62,11 @@ public class Lobby
         return this.players;
     }
 
+    /**
+     * Gets the maximum amount of players allowed in the lobby.
+     * 
+     * @return an {@code int} representing the maximum amount of players allowed in the lobby.
+     */
     public int getMaxPlayers()
     {
         return this.maxPlayers;
