@@ -101,6 +101,4 @@ public class GameCollection {
   public List<Game> getIslands() {
     return this.games;
   }
-
-
 }

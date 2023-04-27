@@ -15,7 +15,8 @@ public class Round {
 
   /**
    * Creates a new instance of {@code Round} with a specified round number.
-   * @param number
+   * 
+   * @param number the number of the round.
    */
   public Round(int number) {
     this.number = number;
