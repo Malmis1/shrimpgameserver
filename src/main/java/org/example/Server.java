@@ -25,7 +25,7 @@ import org.example.logic.UsernameCollection;
  */
 public class Server {
   private static final int PORT = 8080;
-  public static final String VERSION = "1.7.2";
+  public static final String VERSION = "1.7.3";
   private final Map<Lobby, GameSettings> lobbyGameSettingsMap;
   private final Map<String, Lobby> nameLobbyMap;
   private final Map<String, GameCollection> stringGameCollectionMap;
