@@ -36,7 +36,7 @@ public class GameCollection {
         gamePlayers.add(player);
       }
       if (gamePlayers.size() % 3 == 0) {
-        Game game = new Game(name, gameNum, new ArrayList<>(gamePlayers));
+        Game game = new Game(name, gameNum, new ArrayList<>(gamePlayers), settings);
         for (Player gamePlayer : gamePlayers) {
           gamePlayer.setGame(game);
         }

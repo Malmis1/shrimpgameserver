@@ -15,6 +15,7 @@ public class Game {
   private final String name;
   private final int number;
   private final List<Player> players;
+  private final GameSettings gameSettings;
   private final List<String> messages;
   private final Map<Integer, Round> rounds;
   private int currentRoundNum;
@@ -24,13 +25,25 @@ public class Game {
    *
    * @param name the name of the island
    */
-  public Game(String name, int number, List<Player> players) {
+  public Game(String name, int number, List<Player> players, GameSettings gameSettings) {
     this.name = name;
     this.number = number;
     this.players = players;
+    this.gameSettings = gameSettings;
     this.messages = new ArrayList<String>();
     this.rounds = new HashMap<Integer, Round>();
     this.currentRoundNum = 1;
+  }
+
+  public Game(Game game)
+  {
+    this.name = game.getName();
+    this.number = game.getNumber();
+    this.players = new ArrayList<>(game.getPlayers());
+    this.gameSettings = new GameSettings(game.getGameSettings());
+    this.messages = new ArrayList<>(game.getMessages());
+    this.rounds = new HashMap<>(game.getRounds());
+    this.currentRoundNum = game.getCurrentRoundNum();
   }
 
   /**
@@ -60,6 +73,10 @@ public class Game {
     return this.players;
   }
 
+  public GameSettings getGameSettings()
+  {
+    return this.gameSettings;
+  }
   /**
    * Gets the messages from the game.
    * 
@@ -137,7 +154,7 @@ public class Game {
       player.setMoney(money);
       playerMoneyMap.put(player, money);
     }
-    round.setPlayerMoneyMap(playerMoneyMap);
+    round.setPlayerTotalProfitMap(playerMoneyMap);
     this.rounds.put(round.getNumber(), round);
     this.currentRoundNum++;
   }

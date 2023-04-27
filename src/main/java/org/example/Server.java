@@ -30,6 +30,7 @@ public class Server {
   private final Map<String, Lobby> nameLobbyMap;
   private final Map<String, GameCollection> stringGameCollectionMap;
   private final List<ClientHandler> clients;
+  private final List<Game> finishedGames;
   private final UsernameCollection usernameCollection;
   private final Map<String, String> ipUsernameMap;
   private final Map<String, Boolean> ipAdminMap;
@@ -43,6 +44,7 @@ public class Server {
     this.nameLobbyMap = new HashMap<String, Lobby>();
     this.stringGameCollectionMap = new HashMap<String, GameCollection>();
     this.clients = new ArrayList<ClientHandler>();
+    this.finishedGames = new ArrayList<>();
     this.usernameCollection = new UsernameCollection();
     this.ipUsernameMap = new HashMap<String, String>();
     this.ipAdminMap = new HashMap<String, Boolean>();
@@ -100,6 +102,10 @@ public class Server {
    */
   public Map<String, Lobby> getNameLobbyMap() {
     return this.nameLobbyMap;
+  }
+
+  public List<Game> getFinishedGames() {
+    return this.finishedGames;
   }
 
   /**
@@ -253,15 +259,15 @@ public class Server {
    * Sends information about lobbies to the clients.
    */
   public void sendLobbyInfoToClients() {
-    StringBuilder lobbyList = new StringBuilder("UPDATE LOBBY");
+    StringBuilder lobbyInfoData = new StringBuilder("UPDATE LOBBY");
     for (Lobby lobby : this.getLobbyGameSettingsMap().keySet()) {
       String name = lobby.getName();
       String playerAmount = "" + lobby.getPlayers().size();
       String capacity = "" + lobby.getMaxPlayers();
-      lobbyList.append(" " + name + "." + playerAmount + "." + capacity);
+      lobbyInfoData.append(" " + name + "." + playerAmount + "." + capacity);
     }
     for (ClientHandler client : this.getClients()) {
-      client.send(lobbyList.toString());
+      client.send(lobbyInfoData.toString());
     }
     System.out.println("Sent updated lobby list to all clients" + "\r\n");
   }
@@ -275,12 +281,76 @@ public class Server {
   public void catchShrimp(ClientHandler clientHandler, int shrimpCaught) {
     Player player = clientHandler.getPlayer();
     player.setShrimpCaught(shrimpCaught);
+    System.out.println(player.getName() + " caught " + shrimpCaught + "kg of shrimp" + "\r\n");
     Game game = player.getGame();
     if (game.allPlayersCaughtShrimp()) {
       game.storeCurrentRound();
       this.sendRoundResultsToClients(game);
+      if (game.getGameSettings().getNumberOfRounds() + 1 == game.getCurrentRoundNum()) {
+        this.getFinishedGames().add(new Game(game));
+        this.sendFinishedGameToAdmins();
+      }
     }
-    System.out.println(player.getName() + " caught " + shrimpCaught + "kg of shrimp" + "\r\n");
+
+  }
+
+  public void sendFinishedGameToAdmins() {
+    StringBuilder finishedGameData = new StringBuilder("UPDATE FINISHED_GAME");
+    if (this.getFinishedGames().size() > 0) {
+      Game game = this.finishedGames.get(0);
+      GameSettings gameSettings = game.getGameSettings();
+      String gameName = game.getName();
+      int gameNumber = game.getNumber();
+      List<Player> players = game.getPlayers();
+      Player player1 = players.get(0);
+      Player player2 = players.get(1);
+      Player player3 = players.get(2);
+
+      finishedGameData.append(
+          " " + gameName + " " + gameNumber + " " + player1.getName() + "." + player2.getName()
+          + "." + player3.getName());
+      finishedGameData.append(" ");
+      Iterator<Round> roundIterator = game.getRounds().values().iterator();
+      while (roundIterator.hasNext()) {
+        Round round = roundIterator.next();
+        Map<Player, Integer> playerShrimpCaughtMap = round.getPlayerShrimpCaughtMap();
+        Map<Player, Integer> playerRoundProfitMap = round.getPlayerRoundProfitMap();
+        Map<Player, Integer> playerTotalProfitMap = round.getPlayerTotalProfitMap();
+
+        finishedGameData.append(round.getNumber() + "." + playerShrimpCaughtMap.get(player1) + "."
+                                + playerShrimpCaughtMap.get(player2) + "."
+                                + playerShrimpCaughtMap.get(player3) + "."
+                                + round.getTotalShrimpCaught() + "." + round.getShrimpPrice() + "."
+                                + (round.getShrimpPrice() - 5) + "." + playerRoundProfitMap.get(
+            player1) + "." + playerTotalProfitMap.get(player1) + "." + playerRoundProfitMap.get(
+            player2) + "." + playerTotalProfitMap.get(player2) + "." + playerRoundProfitMap.get(
+            player3) + "." + playerTotalProfitMap.get(player3));
+        if (roundIterator.hasNext()) {
+          finishedGameData.append(",");
+        }
+      }
+      finishedGameData.append(
+          " " + gameSettings.getNumberOfPlayers() + "." + gameSettings.getNumberOfRounds() + "."
+          + gameSettings.getRoundTime() + "." + gameSettings.getCommunicationRounds() + "."
+          + gameSettings.getCommunicationRoundTime() + "." + gameSettings.getMinShrimpKilograms()
+          + "." + gameSettings.getMaxShrimpKilograms());
+      finishedGameData.append(" ");
+      if (game.getMessages().size() != 0) {
+        for (String message : game.getMessages()) {
+          finishedGameData.append(message + "◊");
+        }
+      }
+      else {
+        finishedGameData.append("NO_CHAT");
+      }
+
+    }
+    for (ClientHandler client : this.getClients()) {
+      if (client.getPlayer().isAdmin()) {
+        client.send(finishedGameData.toString());
+      }
+    }
+    System.out.println("Sent finished game data to all administrators" + "\r\n");
   }
 
   /**
@@ -323,7 +393,6 @@ public class Server {
   public void addMessageToChat(ClientHandler clientHandler, String message) {
     Player player = clientHandler.getPlayer();
     Game game = player.getGame();
-    game.getMessages().add(player.getName() + "." + message.replace(".", " "));
     for (Player gamePlayer : game.getPlayers()) {
       ClientHandler client = gamePlayer.getClientHandler();
       StringBuilder chatMessage = new StringBuilder("UPDATE MESSAGE_SENT");
@@ -342,8 +411,10 @@ public class Server {
     calendar.add(Calendar.HOUR_OF_DAY, 2);
     SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
     String formattedTime = dateFormat.format(calendar.getTime());
+    game.getMessages().add(player.getName() + "☐" + message + "☐" + formattedTime);
     System.out.println(
-        player.getName() + " sent (" + message + ") to the chat at " + formattedTime + "\r\n");
+        player.getName() + " sent (" + message.replace("⁞", " ") + ") to the chat at "
+        + formattedTime + "\r\n");
   }
 }
 

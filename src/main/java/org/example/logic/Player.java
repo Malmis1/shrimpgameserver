@@ -12,9 +12,10 @@ public class Player {
   private final String name;
   private final ClientHandler clientHandler;
   private int money;
-  private int expenses;
+  private final int expenses;
   private Game game;
   private int shrimpCaught;
+  private boolean isAdmin;
 
   /**
    * Constructor for creating a Player object with the given name, money, expenses, island and
@@ -29,6 +30,7 @@ public class Player {
     this.money = 0;
     this.expenses = expenses;
     this.shrimpCaught = -1;
+    this.isAdmin = false;
   }
 
   /**
@@ -61,6 +63,16 @@ public class Player {
    */
   public void setMoney(int money) {
     this.money = money;
+  }
+
+  public boolean isAdmin()
+  {
+    return this.isAdmin;
+  }
+
+  public void setIsAdmin(boolean isAdmin)
+  {
+    this.isAdmin = isAdmin;
   }
 
   /**

@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.Map;
 import org.example.logic.GameCollection;
@@ -37,9 +38,9 @@ public class ClientHandler implements Runnable {
     this.server = server;
     try {
       this.bufferedWriter = new BufferedWriter(
-          new OutputStreamWriter(this.clientSocket.getOutputStream()));
+          new OutputStreamWriter(this.clientSocket.getOutputStream(), StandardCharsets.UTF_8));
       this.bufferedReader = new BufferedReader(
-          new InputStreamReader(this.clientSocket.getInputStream()));
+          new InputStreamReader(this.clientSocket.getInputStream(), StandardCharsets.UTF_8));
     }
     catch (IOException exception) {
       System.err.println("Failed to open stream: " + exception);
@@ -52,7 +53,7 @@ public class ClientHandler implements Runnable {
    * @param message the message to be sent
    * @throws RuntimeException if there is a failure to send the message to the client
    */
-  public void send(String message) {
+  public synchronized void send(String message) {
     try {
       bufferedWriter.write(message + "\r\n");
       bufferedWriter.flush();
@@ -129,6 +130,7 @@ public class ClientHandler implements Runnable {
             if (password.equals(this.server.getAdminPassword())) {
               this.send("BECOME_ADMIN_SUCCESSFUL");
               this.server.getIpAdminMap().put(ip, true);
+              this.player.setIsAdmin(true);
               System.out.println(this.server.getIpUsernameMap().get(ip) + "|" + ip
                                  + " entered the correct admin password and became "
                                  + "administrator." + "\r\n");

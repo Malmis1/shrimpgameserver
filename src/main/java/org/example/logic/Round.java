@@ -8,8 +8,9 @@ import java.util.Map;
 public class Round {
   private final int number;
   private int shrimpPrice;
+  private int totalShrimpCaught;
   private Map<Player, Integer> playerShrimpCaughtMap;
-  private Map<Player, Integer> playerMoneyMap;
+  private Map<Player, Integer> playerTotalProfitMap;
   private Map<Player, Integer> playerRoundProfitMap;
 
   /**
@@ -53,20 +54,20 @@ public class Round {
    * 
    * @return a map of amounts of money each player has.
    */
-  public Map<Player, Integer> getPlayerMoneyMap()
+  public Map<Player, Integer> getPlayerTotalProfitMap()
   {
-    return this.playerMoneyMap;
+    return this.playerTotalProfitMap;
   }
 
   /**
    * Sets the money per player.
    * 
-   * @param playerMoneyMap a specified map of amounts of 
+   * @param playerTotalProfitMap a specified map of amounts of
    * money each player has.
    */
-  public void setPlayerMoneyMap(Map<Player, Integer> playerMoneyMap)
+  public void setPlayerTotalProfitMap(Map<Player, Integer> playerTotalProfitMap)
   {
-    this.playerMoneyMap = playerMoneyMap;
+    this.playerTotalProfitMap = playerTotalProfitMap;
   }
 
   /**
@@ -99,6 +100,11 @@ public class Round {
     return this.shrimpPrice;
   }
 
+  public int getTotalShrimpCaught()
+  {
+    return this.totalShrimpCaught;
+  }
+
   /**
    * Calculates the shrimp price for the round using a predefined formula.
    */
@@ -108,6 +114,7 @@ public class Round {
     for (int shrimpCaught : this.playerShrimpCaughtMap.values()) {
       totalShrimp += shrimpCaught;
     }
+    this.totalShrimpCaught = totalShrimp;
     this.shrimpPrice = 45 - (int) (0.2 * totalShrimp);
   }
 }
