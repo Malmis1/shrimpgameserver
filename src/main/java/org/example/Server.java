@@ -25,10 +25,10 @@ import org.example.logic.UsernameCollection;
  */
 public class Server {
   private static final int PORT = 8080;
-  public static final String VERSION = "1.7.1";
+  public static final String VERSION = "1.7.2";
   private final Map<Lobby, GameSettings> lobbyGameSettingsMap;
   private final Map<String, Lobby> nameLobbyMap;
-  private final Map<String, GameCollection> stringGameMap;
+  private final Map<String, GameCollection> stringGameCollectionMap;
   private final List<ClientHandler> clients;
   private final UsernameCollection usernameCollection;
   private final Map<String, String> ipUsernameMap;
@@ -41,7 +41,7 @@ public class Server {
   public Server() {
     this.lobbyGameSettingsMap = new HashMap<Lobby, GameSettings>();
     this.nameLobbyMap = new HashMap<String, Lobby>();
-    this.stringGameMap = new HashMap<String, GameCollection>();
+    this.stringGameCollectionMap = new HashMap<String, GameCollection>();
     this.clients = new ArrayList<ClientHandler>();
     this.usernameCollection = new UsernameCollection();
     this.ipUsernameMap = new HashMap<String, String>();
@@ -203,19 +203,19 @@ public class Server {
     GameSettings gameSettings = new GameSettings(this.lobbyGameSettingsMap.get(lobby));
     GameCollection gameCollection = new GameCollection(lobby.getName(), gameSettings,
                                                        lobby.getPlayers());
-    this.stringGameMap.put(gameCollection.getName(), gameCollection);
+    this.stringGameCollectionMap.put(gameCollection.getName(), gameCollection);
     for (ClientHandler client : this.getClients()) {
       Player player = client.getPlayer();
       if (lobby.hasPlayer(player)) {
         List<Game> games = gameCollection.getIslands();
         Game playerGame = null;
         Iterator<Game> iterator = games.iterator();
-        boolean islandFound = false;
-        while (!islandFound && iterator.hasNext()) {
+        boolean gameFound = false;
+        while (!gameFound && iterator.hasNext()) {
           Game game = iterator.next();
           if (game.hasPlayer(player)) {
             playerGame = game;
-            islandFound = true;
+            gameFound = true;
           }
         }
         StringBuilder gameStarted = new StringBuilder("UPDATE GAME_STARTED");
@@ -246,7 +246,7 @@ public class Server {
    * @param gameCollection the game to end
    */
   public void endGame(GameCollection gameCollection) {
-    this.stringGameMap.remove(gameCollection.getName(), gameCollection);
+    this.stringGameCollectionMap.remove(gameCollection.getName(), gameCollection);
   }
 
   /**
