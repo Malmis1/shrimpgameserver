@@ -25,16 +25,16 @@ import org.example.logic.UsernameCollection;
  */
 public class Server {
   private static final int PORT = 8080;
-  public static final String VERSION = "1.7.5";
+  public static final String VERSION = "1.7.6";
   private final Map<Lobby, GameSettings> lobbyGameSettingsMap;
   private final Map<String, Lobby> nameLobbyMap;
-  private final Map<String, GameCollection> stringGameCollectionMap;
   private final List<ClientHandler> clients;
   private final List<Game> finishedGames;
   private final UsernameCollection usernameCollection;
   private final Map<String, String> ipUsernameMap;
   private final Map<String, Boolean> ipAdminMap;
   private final String adminPassword;
+  private int mostRecentGameIndex;
 
   /**
    * Constructs a new Server object and initializes the lobbies, games, and clients ArrayLists.
@@ -42,13 +42,13 @@ public class Server {
   public Server() {
     this.lobbyGameSettingsMap = new HashMap<Lobby, GameSettings>();
     this.nameLobbyMap = new HashMap<String, Lobby>();
-    this.stringGameCollectionMap = new HashMap<String, GameCollection>();
     this.clients = new ArrayList<ClientHandler>();
     this.finishedGames = new ArrayList<>();
     this.usernameCollection = new UsernameCollection();
     this.ipUsernameMap = new HashMap<String, String>();
     this.ipAdminMap = new HashMap<String, Boolean>();
     this.adminPassword = "detteerbra";
+    this.mostRecentGameIndex = 0;
   }
 
   /**
@@ -106,6 +106,14 @@ public class Server {
 
   public List<Game> getFinishedGames() {
     return this.finishedGames;
+  }
+
+  public int getMostRecentGameIndex() {
+    return this.mostRecentGameIndex;
+  }
+
+  public void setMostRecentGameIndex(int mostRecentGameIndex) {
+    this.mostRecentGameIndex = mostRecentGameIndex;
   }
 
   /**
@@ -209,7 +217,6 @@ public class Server {
     GameSettings gameSettings = new GameSettings(this.lobbyGameSettingsMap.get(lobby));
     GameCollection gameCollection = new GameCollection(lobby.getName(), gameSettings,
                                                        lobby.getPlayers());
-    this.stringGameCollectionMap.put(gameCollection.getName(), gameCollection);
     for (ClientHandler client : this.getClients()) {
       Player player = client.getPlayer();
       if (lobby.hasPlayer(player)) {
@@ -246,13 +253,10 @@ public class Server {
     System.out.println("The game " + lobby.getName() + " has started" + "\r\n");
   }
 
-  /**
-   * Ends the specified game and removes it from the games list.
-   *
-   * @param gameCollection the game to end
-   */
-  public void endGame(GameCollection gameCollection) {
-    this.stringGameCollectionMap.remove(gameCollection.getName(), gameCollection);
+  public synchronized void endGame(Game game) {
+    this.getFinishedGames().add(new Game(game));
+    this.setMostRecentGameIndex(this.getFinishedGames().size() - 1);
+    this.sendFinishedGameToAdmins();
   }
 
   /**
@@ -287,8 +291,7 @@ public class Server {
       game.storeCurrentRound();
       this.sendRoundResultsToClients(game);
       if (game.getGameSettings().getNumberOfRounds() + 1 == game.getCurrentRoundNum()) {
-        this.getFinishedGames().add(new Game(game));
-        this.sendFinishedGameToAdmins();
+        this.endGame(game);
       }
     }
 
@@ -296,54 +299,51 @@ public class Server {
 
   public void sendFinishedGameToAdmins() {
     StringBuilder finishedGameData = new StringBuilder("UPDATE FINISHED_GAME");
-    if (this.getFinishedGames().size() > 0) {
-      Game game = this.finishedGames.get(0);
-      GameSettings gameSettings = game.getGameSettings();
-      String gameName = game.getName();
-      int gameNumber = game.getNumber();
-      List<Player> players = game.getPlayers();
-      Player player1 = players.get(0);
-      Player player2 = players.get(1);
-      Player player3 = players.get(2);
+    Game game = this.finishedGames.get(this.getMostRecentGameIndex());
+    GameSettings gameSettings = game.getGameSettings();
+    String gameName = game.getName();
+    int gameNumber = game.getNumber();
+    List<Player> players = game.getPlayers();
+    Player player1 = players.get(0);
+    Player player2 = players.get(1);
+    Player player3 = players.get(2);
 
-      finishedGameData.append(
-          " " + gameName + " " + gameNumber + " " + player1.getName() + "." + player2.getName()
-          + "." + player3.getName());
-      finishedGameData.append(" ");
-      Iterator<Round> roundIterator = game.getRounds().values().iterator();
-      while (roundIterator.hasNext()) {
-        Round round = roundIterator.next();
-        Map<Player, Integer> playerShrimpCaughtMap = round.getPlayerShrimpCaughtMap();
-        Map<Player, Integer> playerRoundProfitMap = round.getPlayerRoundProfitMap();
-        Map<Player, Integer> playerTotalProfitMap = round.getPlayerTotalProfitMap();
+    finishedGameData.append(
+        " " + gameName + " " + gameNumber + " " + player1.getName() + "." + player2.getName() + "."
+        + player3.getName());
+    finishedGameData.append(" ");
+    Iterator<Round> roundIterator = game.getRounds().values().iterator();
+    while (roundIterator.hasNext()) {
+      Round round = roundIterator.next();
+      Map<Player, Integer> playerShrimpCaughtMap = round.getPlayerShrimpCaughtMap();
+      Map<Player, Integer> playerRoundProfitMap = round.getPlayerRoundProfitMap();
+      Map<Player, Integer> playerTotalProfitMap = round.getPlayerTotalProfitMap();
 
-        finishedGameData.append(round.getNumber() + "." + playerShrimpCaughtMap.get(player1) + "."
-                                + playerShrimpCaughtMap.get(player2) + "."
-                                + playerShrimpCaughtMap.get(player3) + "."
-                                + round.getTotalShrimpCaught() + "." + round.getShrimpPrice() + "."
-                                + (round.getShrimpPrice() - 5) + "." + playerRoundProfitMap.get(
-            player1) + "." + playerTotalProfitMap.get(player1) + "." + playerRoundProfitMap.get(
-            player2) + "." + playerTotalProfitMap.get(player2) + "." + playerRoundProfitMap.get(
-            player3) + "." + playerTotalProfitMap.get(player3));
-        if (roundIterator.hasNext()) {
-          finishedGameData.append(",");
-        }
+      finishedGameData.append(round.getNumber() + "." + playerShrimpCaughtMap.get(player1) + "."
+                              + playerShrimpCaughtMap.get(player2) + "."
+                              + playerShrimpCaughtMap.get(player3) + "."
+                              + round.getTotalShrimpCaught() + "." + round.getShrimpPrice() + "."
+                              + (round.getShrimpPrice() - 5) + "." + playerRoundProfitMap.get(
+          player1) + "." + playerTotalProfitMap.get(player1) + "." + playerRoundProfitMap.get(
+          player2) + "." + playerTotalProfitMap.get(player2) + "." + playerRoundProfitMap.get(
+          player3) + "." + playerTotalProfitMap.get(player3));
+      if (roundIterator.hasNext()) {
+        finishedGameData.append(",");
       }
-      finishedGameData.append(
-          " " + gameSettings.getNumberOfPlayers() + "." + gameSettings.getNumberOfRounds() + "."
-          + gameSettings.getRoundTime() + "." + gameSettings.getCommunicationRounds() + "."
-          + gameSettings.getCommunicationRoundTime() + "." + gameSettings.getMinShrimpKilograms()
-          + "." + gameSettings.getMaxShrimpKilograms());
-      finishedGameData.append(" ");
-      if (game.getMessages().size() != 0) {
-        for (String message : game.getMessages()) {
-          finishedGameData.append(message + "◊");
-        }
+    }
+    finishedGameData.append(
+        " " + gameSettings.getNumberOfPlayers() + "." + gameSettings.getNumberOfRounds() + "."
+        + gameSettings.getRoundTime() + "." + gameSettings.getCommunicationRounds() + "."
+        + gameSettings.getCommunicationRoundTime() + "." + gameSettings.getMinShrimpKilograms()
+        + "." + gameSettings.getMaxShrimpKilograms());
+    finishedGameData.append(" ");
+    if (game.getMessages().size() != 0) {
+      for (String message : game.getMessages()) {
+        finishedGameData.append(message + "◊");
       }
-      else {
-        finishedGameData.append("NO_CHAT");
-      }
-
+    }
+    else {
+      finishedGameData.append("NO_CHAT");
     }
     for (ClientHandler client : this.getClients()) {
       if (client.getPlayer().isAdmin()) {
