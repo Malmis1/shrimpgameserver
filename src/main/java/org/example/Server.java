@@ -25,7 +25,7 @@ import org.example.logic.UsernameCollection;
  */
 public class Server {
   private static final int PORT = 8080;
-  public static final String VERSION = "1.7.6";
+  public static final String VERSION = "1.7.7";
   private final Map<Lobby, GameSettings> lobbyGameSettingsMap;
   private final Map<String, Lobby> nameLobbyMap;
   private final List<ClientHandler> clients;
@@ -254,15 +254,10 @@ public class Server {
   }
 
   public synchronized void endGame(Game game) {
-    System.out.println("1");
     synchronized (this.finishedGames) {
-      System.out.println("2");
       this.getFinishedGames().add(new Game(game));
-      System.out.println("3");
       this.setMostRecentGameIndex(this.getFinishedGames().size() - 1);
-      System.out.println("4");
       this.sendFinishedGameToAdmins(this.getMostRecentGameIndex());
-      System.out.println("5");
     }
   }
 
