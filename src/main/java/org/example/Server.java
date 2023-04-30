@@ -254,9 +254,11 @@ public class Server {
   }
 
   public synchronized void endGame(Game game) {
-    this.getFinishedGames().add(new Game(game));
-    this.setMostRecentGameIndex(this.getFinishedGames().size() - 1);
-    this.sendFinishedGameToAdmins();
+    synchronized (this.finishedGames) {
+      this.getFinishedGames().add(new Game(game));
+      this.setMostRecentGameIndex(this.getFinishedGames().size() - 1);
+      this.sendFinishedGameToAdmins(this.getMostRecentGameIndex());
+    }
   }
 
   /**
@@ -297,9 +299,33 @@ public class Server {
 
   }
 
-  public void sendFinishedGameToAdmins() {
+  public void sendFinishedGameToClient(int finishedGameIndex, ClientHandler client) {
+    String finishedGameData = this.getFinishedGameData(finishedGameIndex);
+    client.send(finishedGameData.toString());
+    System.out.println(
+        "Sent finished game data to " + client.getPlayer().getName() + "|" + client.getIpAddress()
+        + "\r\n");
+  }
+
+  public void sendFinishedGameToAdmins(int finishedGameIndex) {
+    for (ClientHandler client : this.getClients()) {
+      if (client.getPlayer().isAdmin()) {
+        this.sendFinishedGameToClient(finishedGameIndex, client);
+      }
+    }
+  }
+
+  public void sendAllFinishedGamesToClient(ClientHandler clientHandler) {
+    synchronized (this.finishedGames) {
+      for (Game finishedGame : this.finishedGames) {
+        this.sendFinishedGameToClient(this.finishedGames.indexOf(finishedGame), clientHandler);
+      }
+    }
+  }
+
+  public String getFinishedGameData(int finishedGameIndex) {
     StringBuilder finishedGameData = new StringBuilder("UPDATE FINISHED_GAME");
-    Game game = this.finishedGames.get(this.getMostRecentGameIndex());
+    Game game = this.finishedGames.get(finishedGameIndex);
     GameSettings gameSettings = game.getGameSettings();
     String gameName = game.getName();
     int gameNumber = game.getNumber();
@@ -345,12 +371,8 @@ public class Server {
     else {
       finishedGameData.append("NO_CHAT");
     }
-    for (ClientHandler client : this.getClients()) {
-      if (client.getPlayer().isAdmin()) {
-        client.send(finishedGameData.toString());
-      }
-    }
-    System.out.println("Sent finished game data to all administrators" + "\r\n");
+
+    return finishedGameData.toString();
   }
 
   /**

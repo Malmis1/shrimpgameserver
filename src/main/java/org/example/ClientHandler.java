@@ -25,6 +25,7 @@ public class ClientHandler implements Runnable {
   private BufferedReader bufferedReader;
   private Player player;
   private Lobby lobbyJoined;
+  private static String ipAddress = "";
 
   /**
    * Constructor for the ClientHandler class.
@@ -90,11 +91,16 @@ public class ClientHandler implements Runnable {
     return this.player;
   }
 
+  public String getIpAddress() {
+    return ipAddress;
+  }
+
   @Override
   public void run() {
     boolean isRunning = true;
     while (isRunning) {
       String ip = this.clientSocket.getInetAddress().getHostAddress();
+      ipAddress = ip;
       Map<String, String> ipUsernameMap = this.server.getIpUsernameMap();
       boolean isAdmin = this.server.getIpAdminMap().containsKey(ip);
       try {
@@ -105,6 +111,9 @@ public class ClientHandler implements Runnable {
 
             if (ipUsernameMap.containsKey(ip)) {
               this.send("USERNAME " + ipUsernameMap.get(ip) + " " + isAdmin);
+              if (isAdmin) {
+                this.server.sendAllFinishedGamesToClient(this);
+              }
               this.player = new Player(ipUsernameMap.get(ip), this, 5);
               this.server.getClients().add(this);
               System.out.println(
@@ -130,6 +139,7 @@ public class ClientHandler implements Runnable {
               this.send("BECOME_ADMIN_SUCCESSFUL");
               this.server.getIpAdminMap().put(ip, true);
               this.player.setIsAdmin(true);
+              this.server.sendAllFinishedGamesToClient(this);
               System.out.println(this.server.getIpUsernameMap().get(ip) + "|" + ip
                                  + " entered the correct admin password and became "
                                  + "administrator." + "\r\n");
