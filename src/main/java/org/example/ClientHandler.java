@@ -111,11 +111,11 @@ public class ClientHandler implements Runnable {
 
             if (ipUsernameMap.containsKey(ip)) {
               this.send("USERNAME " + ipUsernameMap.get(ip) + " " + isAdmin);
+              this.player = new Player(ipUsernameMap.get(ip), this, 5);
+              this.server.getClients().add(this);
               if (isAdmin) {
                 this.server.sendAllFinishedGamesToClient(this);
               }
-              this.player = new Player(ipUsernameMap.get(ip), this, 5);
-              this.server.getClients().add(this);
               System.out.println(
                   this.server.getIpUsernameMap().get(ip) + "|" + ip + " reconnected." + "\r\n");
             }
